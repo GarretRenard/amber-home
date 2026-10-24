@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amber Home — Old-School Android Launcher</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: JetBrains Mono & Share Tech Mono for authentic LCD look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            /* Default Theme: Amber (Siemens ME45 style) */
+            --bg-main: #D99B26;
+            --bg-elevated: #C78A1B;
+            --bg-panel: #141008;
+            --text-main: #141008;
+            --text-muted: #3A2E14;
+            --text-inverted: #D99B26;
+            --border-color: #141008;
+            --accent-highlight: #141008;
+            --btn-shadow: 0 3px 0 #141008;
+            --scanline-opacity: 0.06;
+        }
+
+        [data-theme="inverted"] {
+            --bg-main: #0D0A05;
+            --bg-elevated: #171209;
+            --bg-panel: #D99B26;
+            --text-main: #E5A429;
+            --text-muted: #9E6F18;
+            --text-inverted: #0D0A05;
+            --border-color: #E5A429;
+            --accent-highlight: #E5A429;
+            --btn-shadow: 0 3px 0 #9E6F18;
+            --scanline-opacity: 0.1;
+        }
+
+        [data-theme="gameboy"] {
+            --bg-main: #8BAC0F;
+            --bg-elevated: #7B9A0A;
+            --bg-panel: #0F380F;
+            --text-main: #0F380F;
+            --text-muted: #306230;
+            --text-inverted: #8BAC0F;
+            --border-color: #0F380F;
+            --accent-highlight: #0F380F;
+            --btn-shadow: 0 3px 0 #0F380F;
+            --scanline-opacity: 0.07;
+        }
+
+        [data-theme="eink"] {
+            --bg-main: #EAE6DF;
+            --bg-elevated: #DCD7CE;
+            --bg-panel: #1A1917;
+            --text-main: #1A1917;
+            --text-muted: #57544E;
+            --text-inverted: #EAE6DF;
+            --border-color: #1A1917;
+            --accent-highlight: #1A1917;
+            --btn-shadow: 0 2px 0 #1A1917;
+            --scanline-opacity: 0.02;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            overflow-x: hidden;
+        }
+
+        .font-lcd {
+            font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
+        }
+
+        /* Subtle LCD Matrix / Scanline overlay (Та сама фірмова сіточка з першої версії) */
+        .lcd-grid {
+            background-image: 
+                linear-gradient(rgba(20, 16, 8, var(--scanline-opacity)) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(20, 16, 8, var(--scanline-opacity)) 1px, transparent 1px);
+            background-size: 3px 3px;
+        }
+
+        /* Retro tactile borders & buttons */
+        .retro-card {
+            background-color: var(--bg-main);
+            border: 2px solid var(--border-color);
+            box-shadow: var(--btn-shadow);
+            border-radius: 10px;
+        }
+
+        .retro-card-flat {
+            background-color: var(--bg-elevated);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .retro-btn {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            border: 2px solid var(--border-color);
+            box-shadow: var(--btn-shadow);
+            border-radius: 8px;
+            font-weight: 700;
+            transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.15s ease;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .retro-btn:hover {
+            background-color: var(--bg-elevated);
+        }
+
+        .retro-btn:active, .retro-btn.active-press {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 var(--border-color);
+        }
+
+        .retro-btn-primary {
+            background-color: var(--bg-panel);
+            color: var(--text-inverted);
+            border: 2px solid var(--border-color);
+            box-shadow: var(--btn-shadow);
+            border-radius: 8px;
+            font-weight: 700;
+            transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.15s ease;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .retro-btn-primary:hover {
+            opacity: 0.92;
+        }
+
+        .retro-btn-primary:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 var(--border-color);
+        }
+
+        /* Phone screen selection bar matching screenshot */
+        .launcher-row {
+            padding: 5px 10px;
+            border-radius: 7px;
+            border: 2px solid transparent;
+            transition: all 0.08s ease;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .launcher-row.selected-comfort {
+            border-color: var(--border-color);
+            background-color: var(--bg-elevated);
+            box-shadow: 0 2px 0 var(--border-color);
+            font-weight: 700;
+        }
+
+        .launcher-row.selected-standard {
+            border-color: var(--border-color);
+            font-weight: 700;
+        }
+
+        .launcher-row.selected-high {
+            background-color: var(--bg-panel);
+            color: var(--text-inverted);
+            border-color: var(--border-color);
+            font-weight: 700;
+        }
+
+        .divider-line {
+            border-bottom: 1.5px solid var(--border-color);
+            opacity: 0.45;
+        }
+
+        /* Monochrome SVG Glyphs inside Phone */
+        .mono-glyph {
+            width: 17px;
+            height: 17px;
+            fill: currentColor;
+            display: inline-block;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+
+        /* Custom inputs */
+        .retro-input {
+            background-color: var(--bg-elevated);
+            color: var(--text-main);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            outline: none;
+        }
+
+        .retro-input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.8;
+        }
+
+        .retro-input:focus {
+            box-shadow: var(--btn-shadow);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-elevated);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="lcd-grid min-h-screen flex flex-col">
+
+    <!-- =====================================================================
+         БЛОК ШВИДКОГО РЕДАГУВАННЯ (МІНЯЙ ПОСИЛАННЯ, ВІДЕО ТА ЦІЛІ ТУТ)
+         ===================================================================== -->
+    <script>
+        const SITE_CONFIG = {
+            // Твоє посилання на Base by mono:
+            baseMonoUrl: "https://base.monobank.ua/",
+            // Файли промо-відео (поклади поруч з index.html або вкажи URL):
+            promoVideoUk: "Amber_Home_Promo_UA.mp4",
+            promoVideoEn: "Amber_Home_Promo_EN.mp4",
+            // Відсотки заповнення шкал цілей (від 0 до 100):
+            goal1Percent: 33,
+            goal2Percent: 18
+        };
+    </script>
+
+    <!-- TOP STATUS & CONTROL BAR -->
+    <header class="sticky top-0 z-40 border-b-2 border-[var(--border-color)] bg-[var(--bg-main)]/95 backdrop-blur-sm">
+        <div class="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+            
+            <!-- Left: Brand + Status Icons (Як у старому телефоні) -->
+            <div class="flex items-center gap-3">
+                <a href="#" class="flex items-center gap-2 font-extrabold text-lg tracking-tight">
+                    <span class="inline-block w-3 h-3 rounded-sm bg-[var(--border-color)]"></span>
+                    <span>AMBER HOME</span>
+                    <span class="text-xs px-1.5 py-0.5 border border-[var(--border-color)] rounded font-semibold">BETA v0.9</span>
+                </a>
+                <div class="flex items-center gap-2 text-xs font-semibold opacity-85 pl-2 border-l border-[var(--border-color)]">
+                    <span><i class="ph-bold ph-cell-signal-full"></i> 4G</span>
+                    <span id="header-clock">12:07</span>
+                    <span>75% <i class="ph-fill ph-battery-high"></i></span>
+                </div>
+            </div>
+
+            <!-- Right: Language Toggle FIRST, then Live Theme Switcher -->
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- 1. Language Switcher (Перенесено на початок, щоб одразу було видно!) -->
+                <div class="flex items-center bg-[var(--bg-elevated)] border-2 border-[var(--border-color)] rounded-lg p-0.5 text-xs font-extrabold">
+                    <button onclick="setLanguage('uk')" id="lang-btn-uk" class="px-2.5 py-1 rounded-md bg-[var(--bg-panel)] text-[var(--text-inverted)]">
+                        UA
+                    </button>
+                    <button onclick="setLanguage('en')" id="lang-btn-en" class="px-2.5 py-1 rounded-md">
+                        EN
+                    </button>
+                </div>
+
+                <!-- 2. Theme Selector -->
+                <div class="flex items-center bg-[var(--bg-elevated)] border-2 border-[var(--border-color)] rounded-lg p-0.5 text-xs font-bold">
+                    <button onclick="setTheme('amber')" id="theme-btn-amber" class="px-2.5 py-1 rounded-md transition-all bg-[var(--bg-panel)] text-[var(--text-inverted)]">
+                        Amber
+                    </button>
+                    <button onclick="setTheme('inverted')" id="theme-btn-inverted" class="px-2.5 py-1 rounded-md transition-all">
+                        Inverted
+                    </button>
+                    <button onclick="setTheme('gameboy')" id="theme-btn-gameboy" class="px-2.5 py-1 rounded-md transition-all">
+                        Game Boy
+                    </button>
+                    <button onclick="setTheme('eink')" id="theme-btn-eink" class="px-2.5 py-1 rounded-md transition-all">
+                        E-Ink
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8 md:py-12 space-y-16">
+
+        <!-- HERO SECTION + INTERACTIVE LAUNCHER EMULATOR -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            
+            <!-- Left Column: Manifesto & Actions -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="inline-flex items-center gap-2 px-3 py-1 retro-card-flat text-xs font-bold uppercase tracking-wider">
+                    <i class="ph-bold ph-device-mobile-camera"></i>
+                    <span data-i18n="hero_badge">Натхненний Siemens ME45 • Створений в Україні</span>
+                </div>
+
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight" data-i18n="hero_title">
+                    Я не хочу тупий телефон. Я хочу, щоб розумний телефон перестав робити дурня з мене.
+                </h1>
+
+                <p class="text-base sm:text-lg leading-relaxed opacity-90" data-i18n="hero_subtitle">
+                    Мене дістало, що гаджети керують нашою увагою, втомлюють зір кислотними іконками й змушують купувати нове залізо щороку. <strong>Amber Home</strong> — це незалежний ретро-лаунчер для Android із теплим бурштиновим світлом, монохромними гліфами, фізичною логікою кнопок D-pad, чесним <strong>Режимом тиші</strong> та повагою до твого часу й очей.
+                </p>
+
+                <!-- Key Pills -->
+                <div class="flex flex-wrap gap-2 text-xs font-bold">
+                    <span class="px-3 py-1.5 retro-card-flat">► D-Pad & Hardmode</span>
+                    <span class="px-3 py-1.5 retro-card-flat" data-i18n="pill_eyes">► Комфорт для зору (115%+)</span>
+                    <span class="px-3 py-1.5 retro-card-flat" data-i18n="pill_noads">► Нуль реклами та сміття</span>
+                    <span class="px-3 py-1.5 retro-card-flat" data-i18n="pill_games">► Ретро Game Center (Тетріс і Танки)</span>
+                </div>
+
+                <!-- Primary CTAs -->
+                <div class="pt-2 flex flex-wrap gap-3.5">
+                    <button onclick="openApkModal()" class="retro-btn-primary px-5 py-3.5 text-sm sm:text-base flex items-center gap-2.5">
+                        <i class="ph-bold ph-download-simple text-lg"></i>
+                        <span data-i18n="cta_apk">Завантажити Beta APK</span>
+                    </button>
+
+                    <a href="#support-section" class="retro-btn px-5 py-3.5 text-sm sm:text-base flex items-center gap-2.5">
+                        <i class="ph-bold ph-heart text-lg"></i>
+                        <span data-i18n="cta_donate">Підтримати на Base by mono</span>
+                    </a>
+
+                    <a href="#feedback-section" class="retro-btn px-4 py-3.5 text-sm sm:text-base flex items-center gap-2">
+                        <i class="ph-bold ph-chat-centered-text text-lg"></i>
+                        <span data-i18n="cta_feedback">Фідбек / Баги</span>
+                    </a>
+                </div>
+
+                <p class="text-xs opacity-75" data-i18n="hero_try_hint">
+                    💡 Порада: спробуй поклацати кнопки <strong>▲ ▼ OK НАЗАД</strong> на екрані смартфона праворуч (або стрілками на клавіатурі)! Перевір <strong>УСІ ДОДАТКИ</strong>, <strong>НАЛАШТУВАННЯ</strong> та <strong>GAME CENTER</strong>.
+                </p>
+            </div>
+
+            <!-- Right Column: Interactive Phone Replica -->
+            <div class="lg:col-span-5 flex flex-col items-center">
+                <!-- Phone Outer Chassis -->
+                <div class="w-full max-w-[348px] retro-card p-3.5 border-[3px] border-[var(--border-color)] shadow-xl relative">
+                    
+                    <!-- Speaker Ear Piece -->
+                    <div class="flex justify-center items-center gap-1.5 mb-2.5 opacity-60">
+                        <span class="w-2 h-1 rounded-full bg-[var(--border-color)]"></span>
+                        <span class="w-12 h-1 rounded-full bg-[var(--border-color)]"></span>
+                        <span class="w-2 h-1 rounded-full bg-[var(--border-color)]"></span>
+                    </div>
+
+                    <!-- Inner LCD Screen -->
+                    <div class="border-2 border-[var(--border-color)] rounded-lg p-3.5 min-h-[505px] flex flex-col justify-between bg-[var(--bg-main)] relative overflow-hidden">
+                        
+                        <!-- Top Phone Status Bar & Home Clock Widget -->
+                        <div>
+                            <div class="flex justify-between items-center text-xs font-bold pb-1.5 divider-line">
+                                <div class="flex items-center gap-1.5">
+                                    <span>▄▄█ 4G</span>
+                                    <span>*</span>
+                                    <span id="hardmode-badge" class="hidden px-1 bg-[var(--bg-panel)] text-[var(--text-inverted)] rounded text-[10px]">HARD</span>
+                                    <span id="quiet-badge" class="hidden px-1 border border-[var(--border-color)] rounded text-[10px]">ТИША</span>
+                                </div>
+                                <div>58% ▐██▌</div>
+                            </div>
+
+                            <!-- Clock & Date (VISIBLE ONLY ON HOME SCREEN!) -->
+                            <div id="phone-clock-widget" class="text-center py-2.5 divider-line">
+                                <div id="phone-clock" class="font-lcd text-5xl font-bold tracking-wider leading-none">12:07</div>
+                                <div id="phone-date" class="text-xs font-bold tracking-widest mt-1 uppercase" data-i18n="phone_date">СБ, 24 ЖОВТ</div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Screen Area -->
+                        <div id="phone-screen-body" class="my-2 flex-grow flex flex-col justify-start relative">
+                            
+                            <!-- VIEW 1: MAIN LAUNCHER LIST -->
+                            <div id="view-home" class="space-y-0.5 text-sm"></div>
+
+                            <!-- VIEW 2: ALL APPS DRAWER (NO CLOCK HEADER) -->
+                            <div id="view-allapps" class="hidden space-y-1 text-sm">
+                                <div class="font-extrabold text-base pb-1 mb-1.5 divider-line uppercase" id="allapps-header-title">УСІ ДОДАТКИ</div>
+                                <div class="border-2 border-[var(--border-color)] rounded-md px-2 py-1 text-xs font-bold opacity-80 mb-1.5 flex items-center gap-1.5">
+                                    <span id="search-glyph-slot"></span>
+                                    <span id="allapps-search-placeholder">Пошук додатків...</span>
+                                </div>
+                                <div id="allapps-list" class="space-y-0.5 max-h-[330px] overflow-y-auto pr-0.5"></div>
+                            </div>
+
+                            <!-- VIEW 3: SETTINGS SCREEN (NO CLOCK HEADER) -->
+                            <div id="view-settings" class="hidden space-y-1 text-sm">
+                                <div class="font-extrabold text-base pb-1 mb-1 divider-line uppercase" id="settings-header-title">НАЛАШТУВАННЯ</div>
+                                <div id="settings-list" class="space-y-1"></div>
+                            </div>
+
+                            <!-- VIEW 4: QUIET MODE SCHEDULE SCREEN -->
+                            <div id="view-quiet" class="hidden space-y-1.5 text-xs">
+                                <div class="font-extrabold text-base pb-1 mb-1 divider-line uppercase" id="quiet-header-title">РЕЖИМ ТИШІ</div>
+                                <p class="opacity-85 leading-snug" id="quiet-desc-text">
+                                    Пауза для вибраних додатків за щоденним розкладом. Під час активного періоду список не змінюється.
+                                </p>
+                                <div class="font-extrabold text-sm py-1" id="quiet-schedule-status">Щодня: 17:00 — 21:00</div>
+                                <div id="quiet-list" class="space-y-1 text-sm"></div>
+                            </div>
+
+                            <!-- VIEW 5: GAME CENTER SCREEN -->
+                            <div id="view-gamecenter" class="hidden space-y-1.5 text-sm">
+                                <div class="font-extrabold text-base pb-1 mb-1 divider-line uppercase">GAME CENTER</div>
+                                <div id="gamecenter-list" class="space-y-1.5"></div>
+                            </div>
+
+                            <!-- VIEW 6: AMBER BLOCKS / AMBER TANKS MINI PREVIEW -->
+                            <div id="view-gamedemo" class="hidden space-y-2 text-xs">
+                                <div class="font-extrabold text-base pb-1 divider-line uppercase" id="gamedemo-title">AMBER TANKS</div>
+                                <div id="gamedemo-box" class="retro-card-flat p-2.5 font-mono text-[11px] leading-snug"></div>
+                                <div onclick="phoneKey('BACK')" class="launcher-row selected-comfort text-center mt-2">
+                                    ← НАЗАД У GAME CENTER
+                                </div>
+                            </div>
+
+                            <!-- POPUP 1: QUICK ACCESS OVERLAY (Left folder button) -->
+                            <div id="view-quick-modal" class="hidden absolute inset-x-0 bottom-0 bg-[var(--bg-main)] border-2 border-[var(--border-color)] rounded-lg p-3 shadow-lg z-20">
+                                <div class="font-extrabold text-sm pb-1.5 mb-2 divider-line uppercase" data-i18n="quick_title">ШВИДКИЙ ДОСТУП</div>
+                                <div id="quick-list" class="space-y-1 text-sm"></div>
+                            </div>
+
+                            <!-- POPUP 2: APP CONTEXT MENU OVERLAY (Right gear button) -->
+                            <div id="view-context-modal" class="hidden absolute inset-x-0 bottom-0 bg-[var(--bg-main)] border-2 border-[var(--border-color)] rounded-lg p-3 shadow-lg z-20">
+                                <div class="font-extrabold text-sm pb-1.5 mb-2 divider-line uppercase" id="context-app-title">GEMINI</div>
+                                <div id="context-list" class="space-y-1 text-sm"></div>
+                            </div>
+
+                            <!-- Toast inside phone -->
+                            <div id="phone-toast" class="hidden absolute top-2 inset-x-2 bg-[var(--bg-panel)] text-[var(--text-inverted)] text-xs font-bold px-3 py-2 rounded border border-[var(--border-color)] text-center z-30">
+                            </div>
+                        </div>
+
+                        <!-- Bottom Tactile D-Pad Navigation Bar -->
+                        <div class="pt-2 border-t-2 border-[var(--border-color)] space-y-1.5 select-none">
+                            <!-- Row 1: Left Action (Folder/Back) | UP | OK | DOWN | Right Action (Gear/Opts) -->
+                            <div class="grid grid-cols-5 gap-1.5 text-xs font-extrabold">
+                                <button onclick="phoneKey('LEFT_BTN')" id="dpad-back" class="retro-btn py-2 flex items-center justify-center uppercase">
+                                    НАЗАД
+                                </button>
+                                <button onclick="phoneKey('UP')" id="dpad-up" class="retro-btn py-2 flex items-center justify-center text-sm">
+                                    ▲
+                                </button>
+                                <button onclick="phoneKey('OK')" id="dpad-ok" class="retro-btn py-2 flex items-center justify-center">
+                                    OK
+                                </button>
+                                <button onclick="phoneKey('DOWN')" id="dpad-down" class="retro-btn py-2 flex items-center justify-center text-sm">
+                                    ▼
+                                </button>
+                                <button onclick="phoneKey('RIGHT_BTN')" id="dpad-menu" class="retro-btn py-2 flex items-center justify-center text-xs uppercase" title="Context / Options">
+                                    —
+                                </button>
+                            </div>
+                            <!-- Row 2: ALL APPS | SETTINGS (Visible on Home Screen) -->
+                            <div id="phone-bottom-row2" class="grid grid-cols-2 gap-1.5 text-xs font-extrabold">
+                                <button onclick="phoneKey('ALL_APPS')" class="retro-btn py-2 uppercase truncate px-1" data-i18n="btn_all_apps">
+                                    УСІ ДОДАТКИ
+                                </button>
+                                <button onclick="phoneKey('SETTINGS')" class="retro-btn py-2 uppercase truncate px-1" data-i18n="btn_settings">
+                                    НАЛАШТУВАННЯ
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Emulator Helper Bar below screen -->
+                    <div class="mt-2.5 flex items-center justify-between text-[11px] font-bold px-1 opacity-85">
+                        <span id="emulator-status-label" data-i18n="emu_status">Режим: Стандарт</span>
+                        <button onclick="toggleHardmode()" class="underline hover:opacity-100" id="hardmode-toggle-link" data-i18n="emu_toggle_hardmode">
+                            Увімкнути Hardmode
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROMO VIDEO SECTION (UA & EN 35s REELS) -->
+        <section class="pt-6 border-t-2 border-[var(--border-color)]">
+            <div class="retro-card p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="inline-flex items-center gap-2 px-2.5 py-1 retro-card-flat text-xs font-extrabold uppercase">
+                        <i class="ph-bold ph-film-strip"></i>
+                        <span data-i18n="vid_kicker">ВІДЕОДЕМОНСТРАЦІЯ • 35 СЕКУНД</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold" data-i18n="vid_title">
+                        Подивись, як Amber Home працює вживу
+                    </h2>
+                    <p class="text-sm sm:text-base opacity-90 leading-relaxed" data-i18n="vid_desc">
+                        Короткий огляд реального інтерфейсу: навігація через D-pad, швидкий доступ, миттєва зміна тем (Amber, Inverted, Монохром, Game Boy) та вбудований <strong>Game Center</strong> із тетрісом <em>Amber Blocks</em> і тактичними танками <em>Amber Tanks</em>.
+                    </p>
+                    <div class="flex flex-wrap gap-3 pt-1">
+                        <button onclick="switchPromoVideo('uk')" id="vid-btn-uk" class="retro-btn-primary px-4 py-2 text-xs flex items-center gap-2">
+                            <i class="ph-bold ph-play-circle"></i> Відео українською (UA)
+                        </button>
+                        <button onclick="switchPromoVideo('en')" id="vid-btn-en" class="retro-btn px-4 py-2 text-xs flex items-center gap-2">
+                            <i class="ph-bold ph-play-circle"></i> English Promo (EN)
+                        </button>
+                    </div>
+                    <p class="text-xs opacity-75" data-i18n="vid_hint">
+                        🎵 Увімкни звук у плеєрі — там автентичний 8-bit супровід. Відео автоматично перемикається при зміні мови сайту зверху.
+                    </p>
+                </div>
+
+                <div class="lg:col-span-5 flex justify-center">
+                    <div class="w-full max-w-[290px] retro-card p-2.5 bg-[#0D0A05] border-[3px] border-[var(--border-color)]">
+                        <video id="promo-video-player" controls playsinline preload="metadata" class="w-full rounded border border-[var(--border-color)] bg-black">
+                            <source id="promo-video-src" src="Amber_Home_Promo_UA.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PHILOSOPHY & STORY SECTION (FROM ARTICLE) -->
+        <section class="space-y-8 pt-6 border-t-2 border-[var(--border-color)]">
+            <div class="max-w-3xl space-y-3">
+                <div class="text-xs font-extrabold uppercase tracking-widest opacity-75" data-i18n="story_kicker">ФІЛОСОФІЯ OLD SCHOOL</div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold" data-i18n="story_heading">
+                    Чому я перетворив свій старий Android на «бурштинову цеглинку»
+                </h2>
+                <p class="text-sm sm:text-base opacity-90 leading-relaxed" data-i18n="story_intro">
+                    Береш телефон глянути котру годину — а через пів години вже знаєш, як якийсь мужик викопав басейн посеред джунглів. Знайомо? Ми купуємо смартфони за ціною літака з AMOLED-екранами на 120 Гц, щоб потім шукати в Google «як перестати сидіти в телефоні».
+                </p>
+            </div>
+
+            <!-- 3 Pillars Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="retro-card p-6 space-y-3 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-[var(--bg-panel)] text-[var(--text-inverted)] flex items-center justify-center text-xl font-bold">
+                            <i class="ph-bold ph-game-controller"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold" data-i18n="card1_title">D-Pad та Hardmode: пауза перед імпульсом</h3>
+                        <p class="text-sm leading-relaxed opacity-90" data-i18n="card1_desc">
+                            У режимі Hardmode прямі тицяння пальцем по екрану обмежені — ти рухаєшся меню крок за кроком через нижні кнопки D-pad. Поки доходиш до іконки соцмережі, встигаєш спитати себе: «А воно мені зараз взагалі треба?»
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-[var(--border-color)]/30 text-xs font-bold opacity-80" data-i18n="card1_foot">
+                        ► Добровільний режим без блокування Android
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="retro-card p-6 space-y-3 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-[var(--bg-panel)] text-[var(--text-inverted)] flex items-center justify-center text-xl font-bold">
+                            <i class="ph-bold ph-eye"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold" data-i18n="card2_title">Створено для живих очей, а не як циркова афіша</h3>
+                        <p class="text-sm leading-relaxed opacity-90" data-i18n="card2_desc">
+                            Я не бачу одним оком, тому читабельність, високий контраст, монохромні гліфи, масштаб тексту 135% і чітка рамка фокусу для мене — не дизайнерські іграшки, а щоденна необхідність. Тепле бурштинове світло дає очам спокій.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-[var(--border-color)]/30 text-xs font-bold opacity-80" data-i18n="card2_foot">
+                        ► Палітри: Amber, Inverted, Моно, Game Boy, E-Ink
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="retro-card p-6 space-y-3 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-[var(--bg-panel)] text-[var(--text-inverted)] flex items-center justify-center text-xl font-bold">
+                            <i class="ph-bold ph-wrench"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold" data-i18n="card3_title">Розумне споживання замість Dumbphone за $400</h3>
+                        <p class="text-sm leading-relaxed opacity-90" data-i18n="card3_desc">
+                            Навіщо купувати дорогий «мінімалістичний телефон» із купою обмежень, якщо в тебе вже є нормальний Android? Залиш собі карти, камеру та банкінг, але прибери візуальне сміття з головного екрана.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-[var(--border-color)]/30 text-xs font-bold opacity-80" data-i18n="card3_foot">
+                        ► Працює навіть на старих смартфонах
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HONEST FEATURE STATUS TABLE (FROM CREATOR'S DOC) -->
+        <section class="space-y-6 pt-6 border-t-2 border-[var(--border-color)]">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <div class="text-xs font-extrabold uppercase tracking-widest opacity-75" data-i18n="table_kicker">БЕЗ МАРКЕТИНГОВОЇ ЛОКШИНИ</div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold mt-1" data-i18n="table_title">Що вже є в Amber Home і як воно працює</h2>
+                </div>
+                <p class="text-xs sm:text-sm max-w-md opacity-85" data-i18n="table_note">
+                    Лаунчер замінює домашній екран, але не перевиховує TikTok всередині. Ось чесний стан поточної збірки:
+                </p>
+            </div>
+
+            <div class="retro-card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-[var(--bg-panel)] text-[var(--text-inverted)] border-b-2 border-[var(--border-color)]">
+                                <th class="py-3.5 px-4 font-extrabold uppercase text-xs tracking-wider" data-i18n="th_feature">Можливість / Функція</th>
+                                <th class="py-3.5 px-4 font-extrabold uppercase text-xs tracking-wider" data-i18n="th_status">Стан у беті</th>
+                                <th class="py-3.5 px-4 font-extrabold uppercase text-xs tracking-wider" data-i18n="th_explain">Чесне пояснення</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y-2 divide-[var(--border-color)]">
+                            <tr>
+                                <td class="py-3.5 px-4 font-bold" data-i18n="tr1_f">Ретро-домашній екран, монохромні гліфи, пошук і Швидкий доступ</td>
+                                <td class="py-3.5 px-4">
+                                    <span class="px-2 py-0.5 text-xs font-extrabold bg-[var(--bg-panel)] text-[var(--text-inverted)] rounded whitespace-nowrap" data-i18n="status_ready">ГОТОВО В БЕТІ</span>
+                                </td>
+                                <td class="py-3.5 px-4 opacity-90" data-i18n="tr1_e">Працює щодня вже 2-й місяць; кастомні гліфи 16/20/24 px та заміна іконок працюють.</td>
+                            </tr>
+                            <tr class="bg-[var(--bg-elevated)]/50">
+                                <td class="py-3.5 px-4 font-bold" data-i18n="tr2_f">Кнопкова навігація D-Pad (▲ ▼ OK НАЗАД) + 6 стилів кнопок</td>
+                                <td class="py-3.5 px-4">
+                                    <span class="px-2 py-0.5 text-xs font-extrabold bg-[var(--bg-panel)] text-[var(--text-inverted)] rounded whitespace-nowrap" data-i18n="status_ready">ГОТОВО В БЕТІ</span>
+                                </td>
+                                <td class="py-3.5 px-4 opacity-90" data-i18n="tr2_e">Працює всередині Amber Home з тактильним відгуком, звуками натискань і вибором стилю клавіш.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3.5 px-4 font-bold" data-i18n="tr3_f">Режим Hardmode та «Режим тиші» за розкладом</td>
+                                <td class="py-3.5 px-4">
+                                    <span class="px-2 py-0.5 text-xs font-extrabold bg-[var(--bg-panel)] text-[var(--text-inverted)] rounded whitespace-nowrap" data-i18n="status_ready">ГОТОВО В БЕТІ</span>
+                                </td>
+                                <td class="py-3.5 px-4 opacity-90" data-i18n="tr3_e">Hardmode вимикає прямі дотики (вихід — утримання OK 2 сек). Режим тиші ховає вибрані додатки за розкладом.</td>
+                            </tr>
+                            <tr class="bg-[var(--bg-elevated)]/50">
+                                <td class="py-3.5 px-4 font-bold" data-i18n="tr4_f">Теми (Amber, Inverted, Моно, Game Boy, E-Ink) та теплота бурштину</td>
+                                <td class="py-3.5 px-4">
+                                    <span class="px-2 py-0.5 text-xs font-extrabold border border-[var(--border-color)] rounded whitespace-nowrap" data-i18n="status_polish">ШЛІФУЄТЬСЯ</span>
+                                </td>
+                                <td class="py-3.5 px-4 opacity-90" data-i18n="tr4_e">Налаштування теплоти кольору (0–100%) та стилів виділення (Комфорт, Стандарт, Інверсія) вже в збірці.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3.5 px-4 font-bold" data-i18n="tr5_f">Вбудований GAME CENTER (Amber Blocks & Amber Tanks)</td>
+                                <td class="py-3.5 px-4">
+                                    <span class="px-2 py-0.5 text-xs font-extrabold bg-[var(--bg-panel)] text-[var(--text-inverted)] rounded whitespace-nowrap" data-i18n="status_ready">ГОТОВО В БЕТІ</span>
+                                </td>
+                                <td class="py-3.5 px-4 opacity-90" data-i18n="tr5_e">Класичний тетріс та тактичні танки з окопами, димом, радаром і ремонтом прямо всередині лаунчера.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SUPPORT / DONATION SECTION (BASE BY MONO) -->
+        <section id="support-section" class="pt-6 border-t-2 border-[var(--border-color)]">
+            <div class="retro-card p-6 sm:p-8 lg:p-10 space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    
+                    <!-- Story & Reason to Support -->
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="inline-flex items-center gap-2 px-2.5 py-1 bg-[var(--bg-panel)] text-[var(--text-inverted)] text-xs font-extrabold rounded uppercase">
+                            <i class="ph-bold ph-lightning"></i>
+                            <span data-i18n="donate_badge">Незалежна розробка • Base by mono</span>
+                        </div>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold" data-i18n="donate_title">
+                            Про гроші. Бо навіть бурштинова ностальгія не живиться від святого духу
+                        </h2>
+                        <p class="text-sm sm:text-base leading-relaxed opacity-90" data-i18n="donate_p1">
+                            Я створюю Amber Home у Кривому Розі самотужки, без інвесторів чи бюджету. Зараз живу на невелику пенсію по зору, тому кожна платна підписка на інструменти розробки — це відчутна стаття витрат.
+                        </p>
+                        <p class="text-sm sm:text-base leading-relaxed opacity-90" data-i18n="donate_p2">
+                            А ще дуже допомогла б проста зарядна станція, щоб відключення світла не перетворювали роботу над проєктом на квест «встигни зберегти все до темряви». Якщо тобі близька моя ідея — буду вдячний за будь-який донат або підписку на <strong>Base by mono</strong>.
+                        </p>
+
+                        <div class="pt-2 flex flex-wrap items-center gap-4">
+                            <a id="base-mono-link" href="https://base.monobank.ua/" target="_blank" rel="noopener noreferrer" class="retro-btn-primary px-6 py-4 text-base flex items-center gap-3">
+                                <i class="ph-bold ph-coffee text-xl"></i>
+                                <span data-i18n="donate_btn_main">Підтримати на Base by mono</span>
+                                <i class="ph-bold ph-arrow-up-right"></i>
+                            </a>
+                            <button onclick="openConfigLinkModal()" class="text-xs font-bold underline opacity-75 hover:opacity-100" title="Налаштувати точне посилання після модерації">
+                                <i class="ph-bold ph-gear"></i> <span data-i18n="donate_set_url">Вказати свій URL Base</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Transparent Goals Box -->
+                    <div class="lg:col-span-5 retro-card-flat p-5 space-y-5">
+                        <div class="font-extrabold text-sm uppercase tracking-wider border-b-2 border-[var(--border-color)] pb-2 flex items-center justify-between">
+                            <span data-i18n="goals_title">АКТУАЛЬНІ ЦІЛІ ПРОЄКТУ</span>
+                            <span>[2026]</span>
+                        </div>
+
+                        <!-- Goal 1 -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between text-xs font-bold">
+                                <span data-i18n="goal1_name">1. Підписки на AI та інструменти (на місяць)</span>
+                                <span>$25 / міс</span>
+                            </div>
+                            <div class="w-full h-4 border-2 border-[var(--border-color)] rounded p-0.5 bg-[var(--bg-main)]">
+                                <div id="goal1-bar" class="h-full bg-[var(--bg-panel)]" style="width: 33%"></div>
+                            </div>
+                            <p class="text-[11px] opacity-80" data-i18n="goal1_sub">Дозволяє швидко виправляти баги, писати код та готувати реліз у Google Play.</p>
+                        </div>
+
+                        <!-- Goal 2 -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between text-xs font-bold">
+                                <span data-i18n="goal2_name">2. Зарядна станція для роботи під час блекаутів</span>
+                                <span>~12 000 ₴</span>
+                            </div>
+                            <div class="w-full h-4 border-2 border-[var(--border-color)] rounded p-0.5 bg-[var(--bg-main)]">
+                                <div id="goal2-bar" class="h-full bg-[var(--bg-panel)]" style="width: 18%"></div>
+                            </div>
+                            <p class="text-[11px] opacity-80" data-i18n="goal2_sub">Щоб працювати над Amber Home незалежно від графіків відключень світла.</p>
+                        </div>
+
+                        <div class="p-3 border border-[var(--border-color)] rounded text-xs leading-relaxed opacity-90" data-i18n="goals_disclaimer">
+                            💡 Якщо донат зараз не на часі — жодних проблем! Тестування APK, чесна критика про баги або репост на Reddit допомагають не менше.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- DEVLOG / ARTICLES & LINKS SECTION -->
+        <section class="space-y-6 pt-6 border-t-2 border-[var(--border-color)]">
+            <div>
+                <div class="text-xs font-extrabold uppercase tracking-widest opacity-75" data-i18n="news_kicker">ЩОДЕННИК РОЗРОБКИ ТА ПУБЛІКАЦІЇ</div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold mt-1" data-i18n="news_title">Де почитати про Amber Home</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Article 1: Drukarnya -->
+                <div class="retro-card p-5 flex flex-col justify-between space-y-4">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-xs font-bold opacity-75">
+                            <span>ДРУКАРНЯ • СТАТТЯ</span>
+                            <span>ЖОВТЕНЬ 2026</span>
+                        </div>
+                        <h3 class="text-base font-extrabold leading-snug" data-i18n="art1_title">
+                            «Мене задовбали сучасні смартфони. Тому я зробив зі свого Android старий Siemens»
+                        </h3>
+                        <p class="text-xs opacity-90 leading-relaxed" data-i18n="art1_desc">
+                            Повна історія створення Amber Home: про старенький Redmi K40 Gaming, дорослий конструктор LEGO о третій ночі, режим Hardmode і боротьбу з дофаміновими пастками.
+                        </p>
+                    </div>
+                    <button onclick="openArticlePreviewModal()" class="retro-btn w-full py-2.5 text-xs flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-book-open-text"></i>
+                        <span data-i18n="art1_btn">Читати уривок статті</span>
+                    </button>
+                </div>
+
+                <!-- Devlog 2: New Features -->
+                <div class="retro-card p-5 flex flex-col justify-between space-y-4">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-xs font-bold opacity-75">
+                            <span>DEVLOG #05</span>
+                            <span>ОНОВЛЕННЯ</span>
+                        </div>
+                        <h3 class="text-base font-extrabold leading-snug" data-i18n="art2_title">
+                            Монохромні гліфи, Режим тиші та ретро-ігри в Game Center
+                        </h3>
+                        <p class="text-xs opacity-90 leading-relaxed" data-i18n="art2_desc">
+                            Додано власний пак монохромних іконок, налаштування теплоти бурштинового кольору (65%), розклад паузи для соцмереж та тактичні Amber Tanks.
+                        </p>
+                    </div>
+                    <div class="text-xs font-bold px-3 py-2 retro-card-flat text-center" data-i18n="art2_tag">
+                        🔧 Вже у свіжій Beta-збірці APK
+                    </div>
+                </div>
+
+                <!-- Community 3: Reddit -->
+                <div class="retro-card p-5 flex flex-col justify-between space-y-4">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-xs font-bold opacity-75">
+                            <span>REDDIT • СПІЛЬНОТА</span>
+                            <span>r/dumbphones</span>
+                        </div>
+                        <h3 class="text-base font-extrabold leading-snug" data-i18n="art3_title">
+                            Обговорення з людьми, які шукають альтернативу дорогим «мінімалістичним телефонам»
+                        </h3>
+                        <p class="text-xs opacity-90 leading-relaxed" data-i18n="art3_desc">
+                            Збираємо відгуки від бета-тестерів з України та всього світу. Якщо маєш ідею для нової теми чи знайшов кривий болт в інтерфейсі — пиши у форму нижче!
+                        </p>
+                    </div>
+                    <a href="#feedback-section" class="retro-btn w-full py-2.5 text-xs flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-bug"></i>
+                        <span data-i18n="art3_btn">Перейти до баг-репортів</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- BETA-TESTERS FEEDBACK & BUG WALL -->
+        <section id="feedback-section" class="space-y-8 pt-6 border-t-2 border-[var(--border-color)]">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <div class="text-xs font-extrabold uppercase tracking-widest opacity-75" data-i18n="fb_kicker">БЕТА-ТЕСТУВАННЯ AMBER HOME</div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold mt-1" data-i18n="fb_title">Стіна фідбеку, багів та ідей</h2>
+                </div>
+                <p class="text-xs sm:text-sm max-w-md opacity-85" data-i18n="fb_subtitle">
+                    Мені цікаво не лише «вау, красиво», а конкретно: що незручно, де крива рамка або чого не вистачає, щоб залишити лаунчер на тиждень.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Left: Submit Feedback Form -->
+                <div class="lg:col-span-5">
+                    <form id="feedback-form" onsubmit="submitFeedback(event)" class="retro-card p-6 space-y-4">
+                        <h3 class="font-extrabold text-base uppercase border-b-2 border-[var(--border-color)] pb-2" data-i18n="form_heading">
+                            Написати автору (G.Renard)
+                        </h3>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_name_label">Твій нікнейм або ім'я *</label>
+                            <input type="text" id="fb-author" required maxlength="40" placeholder="Напр., Олексій / u/retro_fan" class="retro-input w-full text-sm">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_device_label">Модель смартфона</label>
+                                <input type="text" id="fb-device" maxlength="40" placeholder="Redmi, Pixel, Samsung..." class="retro-input w-full text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_type_label">Категорія</label>
+                                <select id="fb-category" class="retro-input w-full text-sm font-bold">
+                                    <option value="VR" data-i18n="cat_review">🔥 Враження</option>
+                                    <option value="IDEA" data-i18n="cat_idea">💡 Ідея / Фіча</option>
+                                    <option value="BUG" data-i18n="cat_bug">🐛 Баг / Помилка</option>
+                                    <option value="BETA" data-i18n="cat_beta">📱 Хочу в бета-тест</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_msg_label">Повідомлення *</label>
+                            <textarea id="fb-message" required rows="4" maxlength="500" placeholder="Напиши, як тобі ідея, або залиш контакт (Telegram / Reddit), щоб отримати APK..." class="retro-input w-full text-sm"></textarea>
+                        </div>
+
+                        <button type="submit" id="fb-submit-btn" class="retro-btn-primary w-full py-3 text-sm flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-paper-plane-right"></i>
+                            <span data-i18n="form_submit_btn">Відправити у бортовий журнал</span>
+                        </button>
+
+                        <p id="fb-status-msg" class="text-xs font-bold text-center hidden"></p>
+                    </form>
+                </div>
+
+                <!-- Right: Live Feedback List -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="flex items-center justify-between text-xs font-bold px-1">
+                        <span data-i18n="fb_list_header">ОСТАННІ ЗАПИСИ ТЕСТЕРІВ:</span>
+                        <span id="fb-count-badge" class="px-2 py-0.5 retro-card-flat">3 записи</span>
+                    </div>
+
+                    <div id="feedback-wall-list" class="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t-2 border-[var(--border-color)] bg-[var(--bg-elevated)] mt-16 py-8">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold">
+            <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-[var(--bg-panel)] text-[var(--text-inverted)] rounded">AMBER HOME</span>
+                <span>by G.Renard (Amber Renard) • Кривий Ріг, Україна 🇺🇦</span>
+            </div>
+            <div class="flex items-center gap-4 opacity-85">
+                <button onclick="setTheme('amber')" class="underline">Amber</button>
+                <button onclick="setTheme('gameboy')" class="underline">Game Boy</button>
+                <a href="#support-section" class="underline" data-i18n="footer_support">Base by mono</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL 1: BETA APK DOWNLOAD / JOIN -->
+    <div id="apk-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
+        <div class="retro-card max-w-md w-full p-6 space-y-4">
+            <div class="flex items-center justify-between border-b-2 border-[var(--border-color)] pb-2">
+                <h3 class="font-extrabold text-lg uppercase" data-i18n="apk_modal_title">Бета-тест Amber Home APK</h3>
+                <button onclick="closeApkModal()" class="retro-btn px-2.5 py-1 text-xs">✕</button>
+            </div>
+            <p class="text-sm leading-relaxed" data-i18n="apk_modal_desc">
+                Зараз ми тестуємо свіжу бета-збірку на різних Android-пристроях (перевіряємо роботу D-pad, Режим тиші, безпечний вихід із Hardmode та монохромні гліфи).
+            </p>
+            <div class="retro-card-flat p-3.5 text-xs space-y-1.5">
+                <div class="font-extrabold uppercase" data-i18n="apk_reqs_title">Системні вимоги:</div>
+                <div>• Android 8.0+ (працює легко навіть на старих Redmi / Samsung)</div>
+                <div>• Нуль реклами, трекерів чи прихованих підписок</div>
+            </div>
+            <div class="space-y-2.5 pt-2">
+                <a id="apk-direct-link" href="#feedback-section" onclick="prefillBetaRequest()" class="retro-btn-primary w-full py-3 text-sm flex items-center justify-center gap-2">
+                    <i class="ph-bold ph-download-simple"></i>
+                    <span data-i18n="apk_modal_btn_join">Записатися на тест / Отримати APK</span>
+                </a>
+                <a href="#support-section" onclick="closeApkModal()" class="retro-btn w-full py-2.5 text-xs flex items-center justify-center gap-2">
+                    <i class="ph-bold ph-heart"></i>
+                    <span data-i18n="apk_modal_btn_donate">Підтримати розробку на Base by mono</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ARTICLE EXCERPT -->
+    <div id="article-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
+        <div class="retro-card max-w-2xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between border-b-2 border-[var(--border-color)] pb-2">
+                <h3 class="font-extrabold text-base sm:text-lg uppercase">Мене задовбали сучасні смартфони (Уривок)</h3>
+                <button onclick="closeArticlePreviewModal()" class="retro-btn px-2.5 py-1 text-xs">✕</button>
+            </div>
+            <div class="overflow-y-auto space-y-3 text-sm leading-relaxed pr-2">
+                <p><strong>Зізнавайся. Було таке?</strong> Береш телефон, щоб подивитися, котра година. Дрібниця, секунд на десять. А потім — хоп! — ти вже знаєш, як якийсь мужик викопав басейн посеред джунглів, чому черговий депутат знову щось утнув... А котра година — так і не подивився.</p>
+                <p>І ось я дивлюся на свій старенький Redmi K40 Gaming. Працює? Працює. Навіщо мені новий смартфон за ціною літака або dumbphone за ціною iPhone? Може, спробувати повернути відчуття старого Siemens ME45: зрозуміле меню, кнопкова навігація, приємна стримана палітра, жодного цирку з іконками?</p>
+                <p><strong>Hardmode: зумери, приготуйтеся, зараз буде боляче.</strong> Я зробив навігацію D-pad: вгору, вниз, підтвердити. Поки ти доходиш до потрібного застосунку крок за кроком, іноді встигаєш спитати себе: «А воно мені зараз взагалі треба?» Іноді відповідь — ні. І тоді рука спокійно кладе телефон назад.</p>
+                <p class="italic font-bold">«Хороший телефон — не той, що постійно привертає твою увагу. А той, що мовчки допомагає, коли він тобі потрібен».</p>
+            </div>
+            <div class="pt-2 border-t-2 border-[var(--border-color)] flex justify-end">
+                <button onclick="closeArticlePreviewModal()" class="retro-btn px-4 py-2 text-xs">Закрити</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: OWNER LINK CONFIGURATOR -->
+    <div id="config-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
+        <div class="retro-card max-w-md w-full p-6 space-y-4">
+            <div class="flex items-center justify-between border-b-2 border-[var(--border-color)] pb-2">
+                <h3 class="font-extrabold text-base uppercase">Налаштування посилання Base by mono</h3>
+                <button onclick="closeConfigLinkModal()" class="retro-btn px-2.5 py-1 text-xs">✕</button>
+            </div>
+            <p class="text-xs leading-relaxed opacity-90">
+                Коли модерація Base by mono прийде в пуші monobank, встав сюди своє персональне посилання (наприклад, <code>https://base.monobank.ua/amber_renard</code>), щоб усі кнопки на сайті вели прямо туди:
+            </p>
+            <input type="url" id="custom-base-url-input" placeholder="https://base.monobank.ua/..." class="retro-input w-full text-sm">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeConfigLinkModal()" class="retro-btn px-4 py-2 text-xs">Скасувати</button>
+                <button onclick="saveCustomBaseUrl()" class="retro-btn-primary px-4 py-2 text-xs">Зберегти посилання</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APPLICATION & EMULATOR SCRIPT -->
+    <script>
+        // ==========================================
+        // 0. MONOCHROME VECTOR GLYPHS (FROM YOUR ZIP PACKS)
+        // ==========================================
+        const MONO_GLYPHS = {
+            phone: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.61 21 3 13.39 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.46.57 3.58a1 1 0 0 1-.25 1.01l-2.2 2.2z"/></svg>`,
+            messages: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM7 11a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>`,
+            telegram: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.67-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.48 1.02-.73 3.99-1.73 6.65-2.87 7.98-3.43 3.8-1.58 4.59-1.85 5.1-1.86.11 0 .37.03.53.17.14.11.18.26.2.37.01.08.03.29.01.45z"/></svg>`,
+            camera: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M9 3L7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 14a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>`,
+            music: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>`,
+            security: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>`,
+            shopping: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM1 2v2h2l3.6 7.59-1.35 2.45A2 2 0 0 0 7 17h12v-2H7.42a.25.25 0 0 1-.22-.37L8.1 13h7.45a2 2 0 0 0 1.75-1.03l3.58-6.49A1 1 0 0 0 20 4H5.21l-.94-2H1zm16 16a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>`,
+            chrome: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 6a4 4 0 1 1-4 4 4 4 0 0 1 4-4zm0-4a8 8 0 0 1 6.92 4H12a5.98 5.98 0 0 0-5.19 3L4.1 6.3A7.96 7.96 0 0 1 12 4zm-8 8a7.93 7.93 0 0 1 .65-3.15l3.46 6A4 4 0 0 0 12 16l-3.45 3.97A8 8 0 0 1 4 12zm8 8a7.9 7.9 0 0 1-1.78-.2l3.47-6A5.97 5.97 0 0 0 15.46 10h4.05A7.99 7.99 0 0 1 12 20z"/></svg>`,
+            ai_assistant: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2v1h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4V4a2 2 0 0 1 2-2zM2 10h2v4H2v-4zm18 0h2v4h-2v-4zM9 10a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-6 5h6v1.5H9V15z"/></svg>`,
+            monobank: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M12 2L2 7v2h20V7L12 2zm-7 9v7H3v2h18v-2h-2v-7h-3v7h-2v-7h-4v7H8v-7H5z"/></svg>`,
+            gamepad: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M17.5 7H6.5A4.5 4.5 0 0 0 2 11.5v2A3.5 3.5 0 0 0 5.5 17c1.18 0 2.26-.59 2.91-1.57l.82-1.23h5.54l.82 1.23A3.49 3.49 0 0 0 18.5 17a3.5 3.5 0 0 0 3.5-3.5v-2A4.5 4.5 0 0 0 17.5 7zM9 12H7v2H5.5v-2h-2v-1.5h2v-2H7v2h2V12zm6.5 1a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm2-2a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>`,
+            folder: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>`,
+            settings: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>`,
+            dumbbell: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>`,
+            clock: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 11H8v-2h3V6h2v7z"/></svg>`,
+            gmail: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>`,
+            search: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg>`,
+            files: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>`,
+            heart: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`,
+            play_store: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M4 3v18l16-9L4 3z"/></svg>`,
+            wallet: `<svg class="mono-glyph" viewBox="0 0 24 24"><path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>`
+        };
+
+        function gSvg(key) {
+            return MONO_GLYPHS[key] || '';
+        }
+
+        // ==========================================
+        // 1. BILINGUAL DICTIONARY (UA / EN)
+        // ==========================================
+        let currentLang = 'uk';
+        let currentTheme = 'amber';
+
+        const i18n = {
+            uk: {
+                hero_badge: "Натхненний Siemens ME45 • Створений в Україні",
+                hero_title: "Я не хочу тупий телефон. Я хочу, щоб розумний телефон перестав робити дурня з мене.",
+                hero_subtitle: "Мене дістало, що гаджети керують нашою увагою, втомлюють зір кислотними іконками й змушують купувати нове залізо щороку. <strong>Amber Home</strong> — це незалежний ретро-лаунчер для Android із теплим бурштиновим світлом, монохромними гліфами, фізичною логікою кнопок D-pad, чесним <strong>Режимом тиші</strong> та повагою до твого часу й очей.",
+                pill_eyes: "► Комфорт для зору (115%+)",
+                pill_noads: "► Нуль реклами та сміття",
+                pill_games: "► Ретро Game Center (Тетріс і Танки)",
+                cta_apk: "Завантажити Beta APK",
+                cta_donate: "Підтримати на Base by mono",
+                cta_feedback: "Фідбек / Баги",
+                hero_try_hint: "💡 Порада: спробуй поклацати кнопки <strong>▲ ▼ OK НАЗАД</strong> на екрані смартфона праворуч (або стрілками на клавіатурі)! Перевір <strong>УСІ ДОДАТКИ</strong>, <strong>НАЛАШТУВАННЯ</strong> та <strong>GAME CENTER</strong>.",
+                phone_date: "СБ, 24 ЖОВТ",
+                quick_title: "ШВИДКИЙ ДОСТУП",
+                btn_all_apps: "УСІ ДОДАТКИ",
+                btn_settings: "НАЛАШТУВАННЯ",
+                emu_status: "Режим: Стандарт",
+                emu_status_hard: "Режим: HARDMODE (Тільки D-Pad)",
+                emu_toggle_hardmode: "Увімкнути Hardmode",
+                emu_disable_hardmode: "Вимкнути Hardmode",
+                vid_kicker: "ВІДЕОДЕМОНСТРАЦІЯ • 35 СЕКУНД",
+                vid_title: "Подивись, як Amber Home працює вживу",
+                vid_desc: "Короткий огляд реального інтерфейсу: навігація через D-pad, швидкий доступ, миттєва зміна тем (Amber, Inverted, Монохром, Game Boy) та вбудований <strong>Game Center</strong> із тетрісом <em>Amber Blocks</em> і тактичними танками <em>Amber Tanks</em>.",
+                vid_hint: "🎵 Увімкни звук у плеєрі — там автентичний 8-bit супровід. Відео автоматично перемикається при зміні мови сайту зверху.",
+                story_kicker: "ФІЛОСОФІЯ OLD SCHOOL",
+                story_heading: "Чому я перетворив свій старий Android на «бурштинову цеглинку»",
+                story_intro: "Береш телефон глянути котру годину — а через пів години вже знаєш, як якийсь мужик викопав басейн посеред джунглів. Знайомо? Ми купуємо смартфони за ціною літака з AMOLED-екранами на 120 Гц, щоб потім шукати в Google «як перестати сидіти в телефоні».",
+                card1_title: "D-Pad та Hardmode: пауза перед імпульсом",
+                card1_desc: "У режимі Hardmode прямі тицяння пальцем по екрану обмежені — ти рухаєшся меню крок за кроком через нижні кнопки D-pad. Поки доходиш до іконки соцмережі, встигаєш спитати себе: «А воно мені зараз взагалі треба?»",
+                card1_foot: "► Добровільний режим без блокування Android",
+                card2_title: "Створено для живих очей, а не як циркова афіша",
+                card2_desc: "Я не бачу одним оком, тому читабельність, високий контраст, монохромні гліфи, масштаб тексту 135% і чітка рамка фокусу для мене — не дизайнерські іграшки, а щоденна необхідність. Тепле бурштинове світло дає очам спокій.",
+                card2_foot: "► Палітри: Amber, Inverted, Моно, Game Boy, E-Ink",
+                card3_title: "Розумне споживання замість Dumbphone за $400",
+                card3_desc: "Навіщо купувати дорогий «мінімалістичний телефон» із купою обмежень, якщо в тебе вже є нормальний Android? Залиш собі карти, камеру та банкінг, але прибери візуальне сміття з головного екрана.",
+                card3_foot: "► Працює навіть на старих смартфонах",
+                table_kicker: "БЕЗ МАРКЕТИНГОВОЇ ЛОКШИНИ",
+                table_title: "Що вже є в Amber Home і як воно працює",
+                table_note: "Лаунчер замінює домашній екран, але не перевиховує TikTok всередині. Ось чесний стан поточної збірки:",
+                th_feature: "Можливість / Функція",
+                th_status: "Стан у беті",
+                th_explain: "Чесне пояснення",
+                status_ready: "ГОТОВО В БЕТІ",
+                status_polish: "ШЛІФУЄТЬСЯ",
+                tr1_f: "Ретро-домашній екран, монохромні гліфи, пошук і Швидкий доступ",
+                tr1_e: "Працює щодня вже 2-й місяць; кастомні гліфи 16/20/24 px та заміна іконок працюють.",
+                tr2_f: "Кнопкова навігація D-Pad (▲ ▼ OK НАЗАД) + 6 стилів кнопок",
+                tr2_e: "Працює всередині Amber Home з тактильним відгуком, звуками натискань і вибором стилю клавіш.",
+                tr3_f: "Режим Hardmode та «Режим тиші» за розкладом",
+                tr3_e: "Hardmode вимикає прямі дотики (вихід — утримання OK 2 сек). Режим тиші ховає вибрані додатки за розкладом.",
+                tr4_f: "Теми (Amber, Inverted, Моно, Game Boy, E-Ink) та теплота бурштину",
+                tr4_e: "Налаштування теплоти кольору (0–100%) та стилів виділення (Комфорт, Стандарт, Інверсія) вже в збірці.",
+                tr5_f: "Вбудований GAME CENTER (Amber Blocks & Amber Tanks)",
+                tr5_e: "Класичний тетріс та тактичні танки з окопами, димом, радаром і ремонтом прямо всередині лаунчера.",
+                donate_badge: "Незалежна розробка • Base by mono",
+                donate_title: "Про гроші. Бо навіть бурштинова ностальгія не живиться від святого духу",
+                donate_p1: "Я створюю Amber Home у Кривому Розі самотужки, без інвесторів чи бюджету. Зараз живу на невелику пенсію по зору, тому кожна платна підписка на інструменти розробки — це відчутна стаття витрат.",
+                donate_p2: "А ще дуже допомогла б проста зарядна станція, щоб відключення світла не перетворювали роботу над проєктом на квест «встигни зберегти все до темряви». Якщо тобі близька моя ідея — буду вдячний за будь-який донат або підписку на <strong>Base by mono</strong>.",
+                donate_btn_main: "Підтримати на Base by mono",
+                donate_set_url: "Вказати свій URL Base",
+                goals_title: "АКТУАЛЬНІ ЦІЛІ ПРОЄКТУ",
+                goal1_name: "1. Підписки на AI та інструменти (на місяць)",
+                goal1_sub: "Дозволяє швидко виправляти баги, писати код та готувати реліз у Google Play.",
+                goal2_name: "2. Зарядна станція для роботи під час блекаутів",
+                goal2_sub: "Щоб працювати над Amber Home незалежно від графіків відключень світла.",
+                goals_disclaimer: "💡 Якщо донат зараз не на часі — жодних проблем! Тестування APK, чесна критика про баги або репост на Reddit допомагають не менше.",
+                news_kicker: "ЩОДЕННИК РОЗРОБКИ ТА ПУБЛІКАЦІЇ",
+                news_title: "Де почитати про Amber Home",
+                art1_title: "«Мене задовбали сучасні смартфони. Тому я зробив зі свого Android старий Siemens»",
+                art1_desc: "Повна історія створення Amber Home: про старенький Redmi K40 Gaming, дорослий конструктор LEGO о третій ночі, режим Hardmode і боротьбу з дофаміновими пастками.",
+                art1_btn: "Читати уривок статті",
+                art2_title: "Монохромні гліфи, Режим тиші та ретро-ігри в Game Center",
+                art2_desc: "Додано власний пак монохромних іконок, налаштування теплоти бурштинового кольору (65%), розклад паузи для соцмереж та тактичні Amber Tanks.",
+                art2_tag: "🔧 Вже у свіжій Beta-збірці APK",
+                art3_title: "Обговорення з людьми, які шукають альтернативу дорогим «мінімалістичним телефонам»",
+                art3_desc: "Збираємо відгуки від бета-тестерів з України та всього світу. Якщо маєш ідею для нової теми чи знайшов кривий болт в інтерфейсі — пиши у форму нижче!",
+                art3_btn: "Перейти до баг-репортів",
+                fb_kicker: "БЕТА-ТЕСТУВАННЯ AMBER HOME",
+                fb_title: "Стіна фідбеку, багів та ідей",
+                fb_subtitle: "Мені цікаво не лише «вау, красиво», а конкретно: що незручно, де крива рамка або чого не вистачає, щоб залишити лаунчер на тиждень.",
+                form_heading: "Написати автору (G.Renard)",
+                form_name_label: "Твій нікнейм або ім'я *",
+                form_device_label: "Модель смартфона",
+                form_type_label: "Категорія",
+                cat_review: "🔥 Враження",
+                cat_idea: "💡 Ідея / Фіча",
+                cat_bug: "🐛 Баг / Помилка",
+                cat_beta: "📱 Хочу в бета-тест",
+                form_msg_label: "Повідомлення *",
+                form_submit_btn: "Відправити у бортовий журнал",
+                fb_list_header: "ОСТАННІ ЗАПИСИ ТЕСТЕРІВ:",
+                footer_support: "Підтримати на Base",
+                apk_modal_title: "Бета-тест Amber Home APK",
+                apk_modal_desc: "Зараз ми тестуємо свіжу бета-збірку на різних Android-пристроях (перевіряємо роботу D-pad, Режим тиші, безпечний вихід із Hardmode та монохромні гліфи).",
+                apk_reqs_title: "Системні вимоги:",
+                apk_modal_btn_join: "Записатися на тест / Отримати APK",
+                apk_modal_btn_donate: "Підтримати розробку на Base by mono"
+            },
+            en: {
+                hero_badge: "Siemens ME45 Inspired • Built in Ukraine",
+                hero_title: "I don't want a dumbphone. I want my smartphone to stop making a fool out of me.",
+                hero_subtitle: "I got tired of gadgets hijacking our attention, straining our eyes with flashy icons, and pushing overpriced hardware upgrades every year. <strong>Amber Home</strong> is an indie Old-School Android launcher with a calm amber glow, monochrome glyphs, tactile D-pad navigation, an honest <strong>Quiet Mode</strong>, and respect for your time and eyesight.",
+                pill_eyes: "► High-Contrast Eye Comfort (115%+)",
+                pill_noads: "► Zero Ads, Zero Bloat",
+                pill_games: "► Retro Game Center (Blocks & Tanks)",
+                cta_apk: "Download Beta APK",
+                cta_donate: "Support on Base by mono",
+                cta_feedback: "Feedback / Bugs",
+                hero_try_hint: "💡 Tip: Click the <strong>▲ ▼ OK BACK</strong> buttons on the phone screen to the right (or use your keyboard arrow keys)! Test <strong>ALL APPS</strong>, <strong>SETTINGS</strong> & <strong>GAME CENTER</strong>.",
+                phone_date: "SAT, OCT 24",
+                quick_title: "QUICK ACCESS",
+                btn_all_apps: "ALL APPS",
+                btn_settings: "SETTINGS",
+                emu_status: "Mode: Standard",
+                emu_status_hard: "Mode: HARDMODE (D-Pad Only)",
+                emu_toggle_hardmode: "Enable Hardmode",
+                emu_disable_hardmode: "Disable Hardmode",
+                vid_kicker: "LIVE VIDEO PROMO • 35 SECONDS",
+                vid_title: "Watch Amber Home in Action",
+                vid_desc: "A quick look at the real interface: D-pad navigation, Quick Access popup, instant switching between old-school palettes (Amber, Inverted, Monochrome, Game Boy), and the built-in <strong>Game Center</strong> with <em>Amber Blocks</em> & tactical <em>Amber Tanks</em>.",
+                vid_hint: "🎵 Turn on sound for the 8-bit soundtrack! The video automatically switches when you toggle UA / EN in the top bar.",
+                story_kicker: "OLD SCHOOL PHILOSOPHY",
+                story_heading: "Why I turned my old Android into an 'Amber Brick'",
+                story_intro: "You pick up your phone to check the time—and 30 minutes later you're watching a guy dig a swimming pool in the jungle. Sound familiar? We buy $1000 phones with 120Hz AMOLED screens just to Google 'how to spend less time on my phone.'",
+                card1_title: "D-Pad & Hardmode: A Pause Before the Impulse",
+                card1_desc: "In Hardmode, direct touch tapping on the home screen is restricted—you navigate step-by-step using the tactile D-pad. By the time you scroll to a social app, you actually ask yourself: 'Do I really need to open this right now?'",
+                card1_foot: "► Optional mode without locking you out of Android",
+                card2_title: "Built for Real Eyes, Not a Circus Poster",
+                card2_desc: "I'm blind in one eye, so readability, high contrast, monochrome glyphs, 135% font scaling, and clear focus borders aren't abstract design trends for me—they're a daily necessity. Warm amber light lets your eyes rest.",
+                card2_foot: "► Palettes: Amber, Inverted, Mono, Game Boy, E-Ink",
+                card3_title: "Smart Consumption vs. $400 'Minimalist Phones'",
+                card3_desc: "Why buy an overpriced minimalist dumbphone when you already own a working Android? Keep your maps, banking, and camera, but strip the dopamine traps off your home screen.",
+                card3_foot: "► Runs great on older Android phones",
+                table_kicker: "NO MARKETING BS",
+                table_title: "What's Already in Amber Home & Honest Status",
+                table_note: "A launcher replaces your home screen, it doesn't reprogram TikTok inside. Here is the honest state of the current beta build:",
+                th_feature: "Feature / Capability",
+                th_status: "Beta Status",
+                th_explain: "Honest Explanation",
+                status_ready: "READY IN BETA",
+                status_polish: "POLISHING",
+                tr1_f: "Retro Home Screen, Monochrome Glyphs, Search & Quick Access",
+                tr1_e: "Daily-driven for 2 months; custom 16/20/24 px monochrome icon pack & icon swapping work.",
+                tr2_f: "Tactile D-Pad Navigation (▲ ▼ OK BACK) + 6 Button Styles",
+                tr2_e: "Works inside Amber Home with physical-style vibration, keypad clicks, and customizable button styles.",
+                tr3_f: "Hardmode (D-Pad Only) & Scheduled 'Quiet Mode'",
+                tr3_e: "Hardmode restricts direct touch taps (hold OK 2s to exit). Quiet Mode pauses distracting apps on schedule.",
+                tr4_f: "Themes (Amber, Inverted, Mono, Game Boy, E-Ink) & Amber Warmth",
+                tr4_e: "Amber warmth slider (0–100%) and 3 selection border styles (Comfort, Standard, Inversion) included.",
+                tr5_f: "Built-in GAME CENTER (Amber Blocks & Amber Tanks)",
+                tr5_e: "Classic falling blocks & tactical 2D tanks with trenches, smoke screens, radar, and field repair.",
+                donate_badge: "100% Indie Project • Base by mono",
+                donate_title: "About Money. Because Even Amber Nostalgia Doesn't Run on Thin Air",
+                donate_p1: "I'm building Amber Home independently in Kryvyi Rih, Ukraine, with zero budget. I live on a modest disability pension (vision impairment), so every paid subscription for development tools is a real expense.",
+                donate_p2: "I'm also saving up for a basic portable power station so power blackouts don't turn development into a 'save before darkness hits' quest. If this idea resonates with you, any support on <strong>Base by mono</strong> means a lot.",
+                donate_btn_main: "Support on Base by mono",
+                donate_set_url: "Set custom Base URL",
+                goals_title: "CURRENT PROJECT GOALS",
+                goal1_name: "1. Dev Tools & AI Subscriptions (Monthly)",
+                goal1_sub: "Helps me squash bugs faster, refine code, and prepare a Google Play release.",
+                goal2_name: "2. Backup Power Station for Blackouts",
+                goal2_sub: "To keep building Amber Home even during scheduled power outages in Ukraine.",
+                goals_disclaimer: "💡 Short on cash? No problem at all! Testing the APK, reporting bugs, or upvoting on Reddit helps just as much.",
+                news_kicker: "DEVLOG & PUBLICATIONS",
+                news_title: "Read More About Amber Home",
+                art1_title: "'I got sick of modern smartphones. So I turned my Android into an old Siemens'",
+                art1_desc: "The full story behind Amber Home: reviving an old Redmi K40 Gaming, building at 3 AM like adult LEGO, Hardmode, and escaping dopamine traps.",
+                art1_btn: "Read Article Excerpt",
+                art2_title: "Monochrome Glyphs, Quiet Mode & Retro Game Center",
+                art2_desc: "Added custom monochrome vector glyphs, 65% Amber warmth tuning, scheduled app pausing, and tactical Amber Tanks.",
+                art2_tag: "🔧 Included in latest Beta APK",
+                art3_title: "Community Discussions: Reclaiming Existing Phones Instead of Buying New Hardware",
+                art3_desc: "Gathering feedback from beta testers in Ukraine and on Reddit (r/dumbphones, r/digitalminimalism). Spot a bug or want a feature? Drop it below!",
+                art3_btn: "Jump to Bug Reports",
+                fb_kicker: "AMBER HOME BETA TESTING",
+                fb_title: "Feedback, Bug Reports & Ideas Wall",
+                fb_subtitle: "I'm not looking for 'wow, cool screenshots'—tell me what feels clunky, which border looks off, or what you need to daily-drive this for a week.",
+                form_heading: "Send Note to Creator (G.Renard)",
+                form_name_label: "Your Name or Handle *",
+                form_device_label: "Phone Model",
+                form_type_label: "Category",
+                cat_review: "🔥 Impressions",
+                cat_idea: "💡 Feature Idea",
+                cat_bug: "🐛 Bug Report",
+                cat_beta: "📱 Join Beta Test",
+                form_msg_label: "Message *",
+                form_submit_btn: "Post to Dev Logbook",
+                fb_list_header: "RECENT TESTER ENTRIES:",
+                footer_support: "Support on Base",
+                apk_modal_title: "Amber Home Beta APK",
+                apk_modal_desc: "We're currently testing the beta build across various Android phones (verifying D-pad navigation, Quiet Mode, safe Hardmode toggle, and monochrome glyphs).",
+                apk_reqs_title: "System Requirements:",
+                apk_modal_btn_join: "Request Beta APK Access",
+                apk_modal_btn_donate: "Support Project on Base by mono"
+            }
+        };
+
+        // ==========================================
+        // 2. INTERACTIVE PHONE LAUNCHER EMULATOR
+        // ==========================================
+        let phoneState = {
+            view: 'home', // 'home' | 'allapps' | 'settings' | 'quiet' | 'gamecenter' | 'gamedemo'
+            popup: null,  // null | 'quick' | 'context'
+            homeIndex: 0,
+            allappsIndex: 0,
+            settingsIndex: 0,
+            quietIndex: 0,
+            gameIndex: 0,
+            quickIndex: 0,
+            contextIndex: 0,
+            hardmode: false,
+            quietActive: false,
+            selectionStyle: 'comfort', // 'comfort' | 'standard' | 'high'
+            geminiGlyph: 'ai_assistant',
+            activeGameDemo: 'tanks'
+        };
+
+        function getHomeItems() {
+            const list = [
+                { id: 'phone', glyph: 'phone', uk: "Телефон", en: "Phone" },
+                { id: 'sms', glyph: 'messages', uk: "SMS", en: "SMS" },
+                { id: 'tg', glyph: 'telegram', uk: "Telegram", en: "Telegram" },
+                { id: 'cam', glyph: 'camera', uk: "Камера", en: "Camera" },
+                { id: 'mus', glyph: 'music', uk: "Музика", en: "Music" },
+                { id: 'rez', glyph: 'security', uk: "Резерв+", en: "Reserve+" },
+                { id: 'atb', glyph: 'shopping', uk: "АТБ", en: "ATB Market" },
+                { id: 'chr', glyph: 'chrome', uk: "Chrome", en: "Chrome" }
+            ];
+            if (!phoneState.quietActive) {
+                list.push({ id: 'gem', glyph: phoneState.geminiGlyph, uk: "Gemini", en: "Gemini" });
+            }
+            list.push({ id: 'mono', glyph: 'monobank', uk: "Mono", en: "Mono" });
+            list.push({ id: 'gc', glyph: 'gamepad', uk: "GAME CENTER", en: "GAME CENTER", isGameCenter: true });
+            return list;
+        }
+
+        const allAppsList = [
+            { glyph: 'dumbbell', name: 'Aligator' },
+            { glyph: 'settings', name: 'ApowerMirror' },
+            { glyph: 'shopping', name: 'ATB' },
+            { glyph: 'security', name: 'Auth MS' },
+            { glyph: 'security', name: 'Auth GL' },
+            { glyph: 'chrome', name: 'Chrome' },
+            { glyph: 'clock', name: 'DWA: Дни без алкоголя' },
+            { glyph: 'ai_assistant', name: 'Gemini' },
+            { glyph: 'gmail', name: 'Gmail' },
+            { glyph: 'search', name: 'Google' },
+            { glyph: 'files', name: 'Google One' },
+            { glyph: 'play_store', name: 'Google Play' },
+            { glyph: 'wallet', name: 'GPay' },
+            { glyph: 'heart', name: 'Health24' },
+            { glyph: 'gamepad', name: 'Hearthstone' },
+            { glyph: 'monobank', name: 'Mono' }
+        ];
+
+        const quickItemsData = {
+            uk: ["Нотатки", "Усі додатки", "Налаштування лаунчера", "Картка Криворіжця", "+ Додати папку", "+ Додати додаток"],
+            en: ["Notes", "All Apps", "Launcher Settings", "City Card", "+ Add Folder", "+ Add App"]
+        };
+
+        const contextItemsData = {
+            uk: ["Прибрати з обраного", "Підняти вище", "Опустити нижче", "Замінити іконку (Монохром)", "Додати в режим тиші", "Закрити"],
+            en: ["Remove from favorites", "Move up", "Move down", "Change Icon (Monochrome)", "Add to Quiet Mode", "Close"]
+        };
+
+        function getSettingsItems() {
+            const themeNames = { amber: 'Amber >', inverted: 'Inverted >', gameboy: 'Game Boy >', eink: 'E-Ink >' };
+            const selNamesUk = { comfort: 'Комфорт >', standard: 'Стандарт >', high: 'Інверсія >' };
+            const selNamesEn = { comfort: 'Comfort >', standard: 'Standard >', high: 'Inversion >' };
+            if (currentLang === 'uk') {
+                return [
+                    { label: "Тема", val: themeNames[currentTheme], action: "CYCLE_THEME" },
+                    { label: "Виділення", val: selNamesUk[phoneState.selectionStyle], action: "CYCLE_SEL" },
+                    { label: "Хардмод (D-Pad)", val: phoneState.hardmode ? "УВІМК" : "ВИМК", action: "TOGGLE_HARD" },
+                    { label: "Режим тиші", val: phoneState.quietActive ? "УВІМК >" : "17:00–21:00 >", action: "OPEN_QUIET" },
+                    { label: "Відтінок Amber", val: "65% >", action: "NONE" },
+                    { label: "Гліфи додатків", val: "24 px >", action: "NONE" },
+                    { label: "Розмір тексту", val: "135% >", action: "NONE" }
+                ];
+            } else {
+                return [
+                    { label: "Theme", val: themeNames[currentTheme], action: "CYCLE_THEME" },
+                    { label: "Selection", val: selNamesEn[phoneState.selectionStyle], action: "CYCLE_SEL" },
+                    { label: "Hardmode (D-Pad)", val: phoneState.hardmode ? "ON" : "OFF", action: "TOGGLE_HARD" },
+                    { label: "Quiet Mode", val: phoneState.quietActive ? "ON >" : "17:00–21:00 >", action: "OPEN_QUIET" },
+                    { label: "Amber Warmth", val: "65% >", action: "NONE" },
+                    { label: "App Glyphs", val: "24 px >", action: "NONE" },
+                    { label: "Text Size", val: "135% >", action: "NONE" }
+                ];
+            }
+        }
+
+        function getQuietItems() {
+            if (currentLang === 'uk') {
+                return [
+                    { label: "Додатки для паузи: 3 (Gemini...)", action: "NONE" },
+                    { label: "Початок: 17:00 | Кінець: 21:00", action: "NONE" },
+                    { label: phoneState.quietActive ? "Вимкнути розклад" : "Увімкнути розклад (Приховати Gemini)", action: "TOGGLE_QUIET" },
+                    { label: "← Назад у налаштування", action: "BACK_SETTINGS" }
+                ];
+            } else {
+                return [
+                    { label: "Paused Apps: 3 (Gemini...)", action: "NONE" },
+                    { label: "Start: 17:00 | End: 21:00", action: "NONE" },
+                    { label: phoneState.quietActive ? "Disable Schedule" : "Enable Schedule (Hide Gemini)", action: "TOGGLE_QUIET" },
+                    { label: "← Back to Settings", action: "BACK_SETTINGS" }
+                ];
+            }
+        }
+
+        function getGameCenterItems() {
+            return [
+                { label: "AMBER BLOCKS (Tetris)", id: "blocks" },
+                { label: "AMBER TANKS (Tactical)", id: "tanks" },
+                { label: currentLang === 'uk' ? "КАНЬЙОН • МІСІЯ" : "CANYON • MISSION", id: "tanks" },
+                { label: currentLang === 'uk' ? "← На головний екран" : "← Back to Home", id: "back" }
+            ];
+        }
+
+        function renderPhoneScreen() {
+            const clockWidget = document.getElementById('phone-clock-widget');
+            const bottomRow2 = document.getElementById('phone-bottom-row2');
+            const dpadBack = document.getElementById('dpad-back');
+            const dpadMenu = document.getElementById('dpad-menu');
+
+            const viewHome = document.getElementById('view-home');
+            const viewAllApps = document.getElementById('view-allapps');
+            const viewSettings = document.getElementById('view-settings');
+            const viewQuiet = document.getElementById('view-quiet');
+            const viewGameCenter = document.getElementById('view-gamecenter');
+            const viewGameDemo = document.getElementById('view-gamedemo');
+
+            const viewQuick = document.getElementById('view-quick-modal');
+            const viewContext = document.getElementById('view-context-modal');
+
+            const hardmodeBadge = document.getElementById('hardmode-badge');
+            const quietBadge = document.getElementById('quiet-badge');
+            const statusLabel = document.getElementById('emulator-status-label');
+            const toggleLink = document.getElementById('hardmode-toggle-link');
+
+            // CLOCK WIDGET IS ONLY VISIBLE ON HOME SCREEN!
+            if (phoneState.view === 'home') {
+                clockWidget.classList.remove('hidden');
+                bottomRow2.classList.remove('hidden');
+            } else {
+                clockWidget.classList.add('hidden');
+                bottomRow2.classList.add('hidden');
+            }
+
+            // Update Left & Right hardware button labels based on view
+            if (phoneState.view === 'home' && !phoneState.popup) {
+                dpadBack.innerHTML = gSvg('folder');
+                dpadMenu.innerHTML = gSvg('settings');
+            } else if (phoneState.view === 'allapps') {
+                dpadBack.textContent = currentLang === 'uk' ? 'НАЗАД' : 'BACK';
+                dpadMenu.textContent = currentLang === 'uk' ? 'ОПЦІЇ' : 'OPTS';
+            } else {
+                dpadBack.textContent = currentLang === 'uk' ? 'НАЗАД' : 'BACK';
+                dpadMenu.textContent = '—';
+            }
+
+            // Update Hardmode & Quiet UI indicators
+            hardmodeBadge.classList.toggle('hidden', !phoneState.hardmode);
+            quietBadge.classList.toggle('hidden', !phoneState.quietActive);
+            statusLabel.textContent = phoneState.hardmode ? i18n[currentLang].emu_status_hard : i18n[currentLang].emu_status;
+            toggleLink.textContent = phoneState.hardmode ? i18n[currentLang].emu_disable_hardmode : i18n[currentLang].emu_toggle_hardmode;
+
+            const selClass = phoneState.selectionStyle === 'comfort' 
+                ? 'selected-comfort' 
+                : (phoneState.selectionStyle === 'standard' ? 'selected-standard' : 'selected-high');
+
+            // 1. Render Home List with Monochrome SVG Glyphs
+            const homeItems = getHomeItems();
+            if (phoneState.homeIndex >= homeItems.length) phoneState.homeIndex = homeItems.length - 1;
+            viewHome.innerHTML = homeItems.map((item, idx) => {
+                const isSelected = idx === phoneState.homeIndex;
+                const name = currentLang === 'uk' ? item.uk : item.en;
+                const topDivider = item.isGameCenter ? 'mt-1.5 pt-1.5 border-t border-[var(--border-color)]/40' : '';
+                return `
+                    <div onclick="onDirectRowTap('home', ${idx})" class="launcher-row ${isSelected ? selClass : ''} ${topDivider} flex items-center justify-between">
+                        <span class="flex items-center gap-2.5">${gSvg(item.glyph)}<span>${name}</span></span>
+                        ${item.isGameCenter ? '<span class="font-bold">&gt;</span>' : ''}
+                    </div>
+                `;
+            }).join('');
+
+            // 2. Render All Apps Drawer (No Clock at top!)
+            document.getElementById('allapps-header-title').textContent = currentLang === 'uk' ? 'УСІ ДОДАТКИ' : 'ALL APPS';
+            document.getElementById('search-glyph-slot').innerHTML = gSvg('search');
+            document.getElementById('allapps-search-placeholder').textContent = currentLang === 'uk' ? 'Пошук додатків...' : 'Search apps...';
+            document.getElementById('allapps-list').innerHTML = allAppsList.map((app, idx) => {
+                const isSelected = idx === phoneState.allappsIndex;
+                return `
+                    <div onclick="onDirectRowTap('allapps', ${idx})" class="launcher-row ${isSelected ? selClass : ''} flex items-center gap-2.5">
+                        ${gSvg(app.glyph)}<span>${app.name}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // 3. Render Settings List (No Clock at top!)
+            const sItems = getSettingsItems();
+            document.getElementById('settings-header-title').textContent = currentLang === 'uk' ? 'НАЛАШТУВАННЯ' : 'SETTINGS';
+            document.getElementById('settings-list').innerHTML = sItems.map((s, idx) => {
+                const isSelected = idx === phoneState.settingsIndex;
+                return `
+                    <div onclick="onDirectRowTap('settings', ${idx})" class="launcher-row ${isSelected ? selClass : ''} flex items-center justify-between">
+                        <span>${s.label}</span>
+                        <span class="font-extrabold">${s.val}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // 4. Render Quiet Mode
+            const qList = getQuietItems();
+            document.getElementById('quiet-header-title').textContent = currentLang === 'uk' ? 'РЕЖИМ ТИШІ' : 'QUIET MODE';
+            document.getElementById('quiet-list').innerHTML = qList.map((q, idx) => {
+                const isSelected = idx === phoneState.quietIndex;
+                return `
+                    <div onclick="onDirectRowTap('quiet', ${idx})" class="launcher-row ${isSelected ? selClass : ''}">
+                        ${q.label}
+                    </div>
+                `;
+            }).join('');
+
+            // 5. Render Game Center
+            const gList = getGameCenterItems();
+            document.getElementById('gamecenter-list').innerHTML = gList.map((g, idx) => {
+                const isSelected = idx === phoneState.gameIndex;
+                return `
+                    <div onclick="onDirectRowTap('gamecenter', ${idx})" class="launcher-row ${isSelected ? selClass : ''} border border-[var(--border-color)]/50 text-center">
+                        ${g.label}
+                    </div>
+                `;
+            }).join('');
+
+            // 6. Render Game Demo (Amber Blocks or Amber Tanks)
+            if (phoneState.activeGameDemo === 'blocks') {
+                document.getElementById('gamedemo-title').textContent = 'AMBER BLOCKS';
+                document.getElementById('gamedemo-box').innerHTML = `
+                    РАХУНОК: 140 | ЛІНІЇ: 4 | РІВЕНЬ: 1<br>
+                    ┌────────────────────┐<br>
+                    │ . . . . ██ ██ . .  │<br>
+                    │ . . . . ██ ██ . .  │<br>
+                    │ . . ▓▓ . . . ██ ██ │<br>
+                    │ ██ ██ ▓▓ ▓▓ ▓▓ ██ ██ │<br>
+                    └────────────────────┘<br>
+                    [ ✚ D-PAD ] &nbsp; [SELECT] [START] &nbsp; [A] [B]
+                `;
+            } else {
+                document.getElementById('gamedemo-title').textContent = 'AMBER TANKS';
+                document.getElementById('gamedemo-box').innerHTML = `
+                    ЖИТТЯ: ████░ | БРОНЯ: ███░░ | СНАРЯДИ: 4<br>
+                    R4 • Д2 • Ж2 &nbsp; (ЦІЛЬ: РАДАР)<br>
+                    ┌────────────────────────┐<br>
+                    │ ░░ ╬╬ [МІСТ]  ▪  [Танк] │<br>
+                    │ ░░ ══ [ОКОПИ] ✹  [Ворог]│<br>
+                    └────────────────────────┘<br>
+                    [ОКОП] &nbsp; [СНАРЯДИ] &nbsp; [РЕМОНТ]<br>
+                    [ДИМ] &nbsp; [ОГЛЯД] &nbsp; [РАКЕТА] &nbsp; [ВОГОНЬ]
+                `;
+            }
+
+            // Popups: Quick Access & Context Menu
+            const quickItems = quickItemsData[currentLang];
+            document.getElementById('quick-list').innerHTML = quickItems.map((q, idx) => {
+                const isSelected = idx === phoneState.quickIndex;
+                return `<div onclick="onDirectPopupTap('quick', ${idx})" class="launcher-row ${isSelected ? selClass : ''}">${q}</div>`;
+            }).join('');
+
+            const ctxItems = contextItemsData[currentLang];
+            const currentHomeApp = homeItems[phoneState.homeIndex] || { uk: 'ДОДАТОК', en: 'APP' };
+            document.getElementById('context-app-title').textContent = (currentLang === 'uk' ? currentHomeApp.uk : currentHomeApp.en).toUpperCase();
+            document.getElementById('context-list').innerHTML = ctxItems.map((c, idx) => {
+                const isSelected = idx === phoneState.contextIndex;
+                return `<div onclick="onDirectPopupTap('context', ${idx})" class="launcher-row ${isSelected ? selClass : ''}">${c}</div>`;
+            }).join('');
+
+            // Toggle main views
+            viewHome.classList.toggle('hidden', phoneState.view !== 'home');
+            viewAllApps.classList.toggle('hidden', phoneState.view !== 'allapps');
+            viewSettings.classList.toggle('hidden', phoneState.view !== 'settings');
+            viewQuiet.classList.toggle('hidden', phoneState.view !== 'quiet');
+            viewGameCenter.classList.toggle('hidden', phoneState.view !== 'gamecenter');
+            viewGameDemo.classList.toggle('hidden', phoneState.view !== 'gamedemo');
+
+            // Toggle popups
+            viewQuick.classList.toggle('hidden', phoneState.popup !== 'quick');
+            viewContext.classList.toggle('hidden', phoneState.popup !== 'context');
+        }
+
+        function onDirectRowTap(viewType, index) {
+            if (phoneState.hardmode) {
+                showPhoneToast(currentLang === 'uk' 
+                    ? "HARDMODE: Прямий дотик вимкнено! Керуй кнопками ▲ ▼ OK" 
+                    : "HARDMODE: Direct touch disabled! Use ▲ ▼ OK buttons");
+                return;
+            }
+            if (viewType === 'home') phoneState.homeIndex = index;
+            else if (viewType === 'allapps') phoneState.allappsIndex = index;
+            else if (viewType === 'settings') phoneState.settingsIndex = index;
+            else if (viewType === 'quiet') phoneState.quietIndex = index;
+            else if (viewType === 'gamecenter') phoneState.gameIndex = index;
+            renderPhoneScreen();
+            phoneKey('OK');
+        }
+
+        function onDirectPopupTap(popType, index) {
+            if (phoneState.hardmode) {
+                showPhoneToast(currentLang === 'uk' ? "HARDMODE: Керуй кнопками ▲ ▼ OK!" : "HARDMODE: Use ▲ ▼ OK!");
+                return;
+            }
+            if (popType === 'quick') phoneState.quickIndex = index;
+            else if (popType === 'context') phoneState.contextIndex = index;
+            renderPhoneScreen();
+            phoneKey('OK');
+        }
+
+        function phoneKey(key) {
+            if (navigator.vibrate) navigator.vibrate(12);
+
+            if (key === 'UP') {
+                if (phoneState.popup === 'quick') {
+                    const len = quickItemsData[currentLang].length;
+                    phoneState.quickIndex = (phoneState.quickIndex - 1 + len) % len;
+                } else if (phoneState.popup === 'context') {
+                    const len = contextItemsData[currentLang].length;
+                    phoneState.contextIndex = (phoneState.contextIndex - 1 + len) % len;
+                } else if (phoneState.view === 'home') {
+                    const len = getHomeItems().length;
+                    phoneState.homeIndex = (phoneState.homeIndex - 1 + len) % len;
+                } else if (phoneState.view === 'allapps') {
+                    const len = allAppsList.length;
+                    phoneState.allappsIndex = (phoneState.allappsIndex - 1 + len) % len;
+                } else if (phoneState.view === 'settings') {
+                    const len = getSettingsItems().length;
+                    phoneState.settingsIndex = (phoneState.settingsIndex - 1 + len) % len;
+                } else if (phoneState.view === 'quiet') {
+                    const len = getQuietItems().length;
+                    phoneState.quietIndex = (phoneState.quietIndex - 1 + len) % len;
+                } else if (phoneState.view === 'gamecenter') {
+                    const len = getGameCenterItems().length;
+                    phoneState.gameIndex = (phoneState.gameIndex - 1 + len) % len;
+                }
+            } else if (key === 'DOWN') {
+                if (phoneState.popup === 'quick') {
+                    const len = quickItemsData[currentLang].length;
+                    phoneState.quickIndex = (phoneState.quickIndex + 1) % len;
+                } else if (phoneState.popup === 'context') {
+                    const len = contextItemsData[currentLang].length;
+                    phoneState.contextIndex = (phoneState.contextIndex + 1) % len;
+                } else if (phoneState.view === 'home') {
+                    const len = getHomeItems().length;
+                    phoneState.homeIndex = (phoneState.homeIndex + 1) % len;
+                } else if (phoneState.view === 'allapps') {
+                    const len = allAppsList.length;
+                    phoneState.allappsIndex = (phoneState.allappsIndex + 1) % len;
+                } else if (phoneState.view === 'settings') {
+                    const len = getSettingsItems().length;
+                    phoneState.settingsIndex = (phoneState.settingsIndex + 1) % len;
+                } else if (phoneState.view === 'quiet') {
+                    const len = getQuietItems().length;
+                    phoneState.quietIndex = (phoneState.quietIndex + 1) % len;
+                } else if (phoneState.view === 'gamecenter') {
+                    const len = getGameCenterItems().length;
+                    phoneState.gameIndex = (phoneState.gameIndex + 1) % len;
+                }
+            } else if (key === 'LEFT_BTN' || key === 'BACK') {
+                if (phoneState.popup) {
+                    phoneState.popup = null;
+                } else if (phoneState.view === 'home' && key === 'LEFT_BTN') {
+                    phoneState.popup = 'quick';
+                    phoneState.quickIndex = 0;
+                } else if (phoneState.view === 'gamedemo') {
+                    phoneState.view = 'gamecenter';
+                } else if (phoneState.view === 'quiet') {
+                    phoneState.view = 'settings';
+                } else {
+                    phoneState.view = 'home';
+                }
+            } else if (key === 'RIGHT_BTN') {
+                if (phoneState.popup) {
+                    phoneState.popup = null;
+                } else if (phoneState.view === 'home') {
+                    phoneState.popup = 'context';
+                    phoneState.contextIndex = 0;
+                }
+            } else if (key === 'ALL_APPS') {
+                phoneState.popup = null;
+                phoneState.view = 'allapps';
+                phoneState.allappsIndex = 0;
+            } else if (key === 'SETTINGS') {
+                phoneState.popup = null;
+                phoneState.view = 'settings';
+                phoneState.settingsIndex = 0;
+            } else if (key === 'OK') {
+                if (phoneState.popup === 'quick') {
+                    const idx = phoneState.quickIndex;
+                    phoneState.popup = null;
+                    if (idx === 1) phoneState.view = 'allapps';
+                    else if (idx === 2) phoneState.view = 'settings';
+                    else showPhoneToast(quickItemsData[currentLang][idx]);
+                } else if (phoneState.popup === 'context') {
+                    const idx = phoneState.contextIndex;
+                    phoneState.popup = null;
+                    if (idx === 3) {
+                        const icons = ['ai_assistant', 'chrome', 'messages', 'phone'];
+                        phoneState.geminiGlyph = icons[(icons.indexOf(phoneState.geminiGlyph) + 1) % icons.length];
+                        showPhoneToast(currentLang === 'uk' ? "Монохромну іконку змінено!" : "Monochrome icon changed!");
+                    } else if (idx === 4) {
+                        phoneState.view = 'quiet';
+                    }
+                } else if (phoneState.view === 'home') {
+                    const item = getHomeItems()[phoneState.homeIndex];
+                    if (item.isGameCenter) {
+                        phoneState.view = 'gamecenter';
+                        phoneState.gameIndex = 0;
+                    } else {
+                        showPhoneToast((currentLang === 'uk' ? "Відкрито: " : "Launched: ") + (currentLang === 'uk' ? item.uk : item.en));
+                    }
+                } else if (phoneState.view === 'allapps') {
+                    const app = allAppsList[phoneState.allappsIndex];
+                    showPhoneToast((currentLang === 'uk' ? "Запуск: " : "Launching: ") + app.name);
+                } else if (phoneState.view === 'settings') {
+                    const sItem = getSettingsItems()[phoneState.settingsIndex];
+                    if (sItem.action === 'CYCLE_THEME') {
+                        const order = ['amber', 'inverted', 'gameboy', 'eink'];
+                        setTheme(order[(order.indexOf(currentTheme) + 1) % order.length]);
+                    } else if (sItem.action === 'CYCLE_SEL') {
+                        const sOrder = ['comfort', 'standard', 'high'];
+                        phoneState.selectionStyle = sOrder[(sOrder.indexOf(phoneState.selectionStyle) + 1) % sOrder.length];
+                    } else if (sItem.action === 'TOGGLE_HARD') {
+                        toggleHardmode();
+                    } else if (sItem.action === 'OPEN_QUIET') {
+                        phoneState.view = 'quiet';
+                        phoneState.quietIndex = 0;
+                    }
+                } else if (phoneState.view === 'quiet') {
+                    const qItem = getQuietItems()[phoneState.quietIndex];
+                    if (qItem.action === 'TOGGLE_QUIET') {
+                        phoneState.quietActive = !phoneState.quietActive;
+                        showPhoneToast(phoneState.quietActive
+                            ? (currentLang === 'uk' ? "Режим тиші УВІМКНЕНО! Gemini приховано." : "Quiet Mode ON! Gemini hidden.")
+                            : (currentLang === 'uk' ? "Режим тиші ВИМКНЕНО" : "Quiet Mode OFF"));
+                    } else if (qItem.action === 'BACK_SETTINGS') {
+                        phoneState.view = 'settings';
+                    }
+                } else if (phoneState.view === 'gamecenter') {
+                    const gItem = getGameCenterItems()[phoneState.gameIndex];
+                    if (gItem.id === 'back') {
+                        phoneState.view = 'home';
+                    } else {
+                        phoneState.activeGameDemo = gItem.id;
+                        phoneState.view = 'gamedemo';
+                    }
+                }
+            }
+
+            renderPhoneScreen();
+        }
+
+        let toastTimer = null;
+        function showPhoneToast(text) {
+            const toast = document.getElementById('phone-toast');
+            toast.textContent = text;
+            toast.classList.remove('hidden');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 2200);
+        }
+
+        function toggleHardmode() {
+            phoneState.hardmode = !phoneState.hardmode;
+            renderPhoneScreen();
+            showPhoneToast(phoneState.hardmode 
+                ? (currentLang === 'uk' ? "Hardmode УВІМКНЕНО (тільки D-Pad)" : "Hardmode ON (D-Pad only)")
+                : (currentLang === 'uk' ? "Hardmode ВИМКНЕНО" : "Hardmode OFF"));
+        }
+
+        // Keyboard Arrow Support
+        window.addEventListener('keydown', (e) => {
+            const tag = document.activeElement ? document.activeElement.tagName : '';
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+            if (e.key === 'ArrowUp') { e.preventDefault(); phoneKey('UP'); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); phoneKey('DOWN'); }
+            else if (e.key === 'Enter') { e.preventDefault(); phoneKey('OK'); }
+            else if (e.key === 'Escape' || e.key === 'Backspace') { phoneKey('BACK'); }
+        });
+
+        // ==========================================
+        // 3. THEME, LANGUAGE & VIDEO SWITCHERS
+        // ==========================================
+        function setTheme(themeName) {
+            currentTheme = themeName;
+            if (themeName === 'amber') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                document.documentElement.setAttribute('data-theme', themeName);
+            }
+
+            ['amber', 'inverted', 'gameboy', 'eink'].forEach(t => {
+                const btn = document.getElementById('theme-btn-' + t);
+                if (!btn) return;
+                if (t === themeName) {
+                    btn.className = "px-2.5 py-1 rounded-md transition-all bg-[var(--bg-panel)] text-[var(--text-inverted)]";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-md transition-all";
+                }
+            });
+
+            renderPhoneScreen();
+        }
+
+        function switchPromoVideo(lang) {
+            try {
+                const player = document.getElementById('promo-video-player');
+                const srcEl = document.getElementById('promo-video-src');
+                const btnUk = document.getElementById('vid-btn-uk');
+                const btnEn = document.getElementById('vid-btn-en');
+                if (srcEl && player) {
+                    const targetFile = lang === 'en' ? SITE_CONFIG.promoVideoEn : SITE_CONFIG.promoVideoUk;
+                    if (srcEl.getAttribute('src') !== targetFile) {
+                        srcEl.setAttribute('src', targetFile);
+                        player.load();
+                    }
+                }
+                if (btnUk && btnEn) {
+                    btnUk.className = lang === 'uk' ? "retro-btn-primary px-4 py-2 text-xs flex items-center gap-2" : "retro-btn px-4 py-2 text-xs flex items-center gap-2";
+                    btnEn.className = lang === 'en' ? "retro-btn-primary px-4 py-2 text-xs flex items-center gap-2" : "retro-btn px-4 py-2 text-xs flex items-center gap-2";
+                }
+            } catch (err) {
+                console.warn("Video switch skipped:", err);
+            }
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+
+            const dict = i18n[lang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict && dict[key]) {
+                    el.innerHTML = dict[key];
+                }
+            });
+
+            const btnUk = document.getElementById('lang-btn-uk');
+            const btnEn = document.getElementById('lang-btn-en');
+            if (lang === 'uk') {
+                btnUk.className = "px-2.5 py-1 rounded-md bg-[var(--bg-panel)] text-[var(--text-inverted)]";
+                btnEn.className = "px-2.5 py-1 rounded-md";
+            } else {
+                btnEn.className = "px-2.5 py-1 rounded-md bg-[var(--bg-panel)] text-[var(--text-inverted)]";
+                btnUk.className = "px-2.5 py-1 rounded-md";
+            }
+
+            switchPromoVideo(lang);
+            renderPhoneScreen();
+            renderFeedbackWall();
+        }
+
+        // ==========================================
+        // 4. FEEDBACK WALL
+        // ==========================================
+        let feedbackEntries = [
+            {
+                id: 'seed-1',
+                author: 'Максим (Дніпро)',
+                device: 'Redmi Note 10 Pro',
+                category: 'VR',
+                message: 'Тема Siemens ME45 — це просто в саме серце. D-pad реально зупиняє перед тим, як бездумно тицьнути в Інстаграм. А за танки в Game Center окремий респект!',
+                likes: 14,
+                date: '24.10.2026'
+            },
+            {
+                id: 'seed-2',
+                author: 'u/monochrome_minimalist',
+                device: 'Pixel 6a',
+                category: 'IDEA',
+                message: 'Love the Game Boy & Amber palettes! The Scheduled Quiet Mode that locks editing during active hours is genius.',
+                likes: 9,
+                date: '23.10.2026'
+            },
+            {
+                id: 'seed-3',
+                author: 'Андрій К.',
+                device: 'Samsung A52',
+                category: 'BUG',
+                message: 'Нові монохромні гліфи 24px виглядають super чітко. Чекаю свіжий APK для тестування Режиму тиші!',
+                likes: 7,
+                date: '22.10.2026'
+            }
+        ];
+
+        const categoryBadgeMap = {
+            uk: { VR: '🔥 Враження', IDEA: '💡 Ідея', BUG: '🐛 Баг', BETA: '📱 Бета-тест' },
+            en: { VR: '🔥 Review', IDEA: '💡 Idea', BUG: '🐛 Bug', BETA: '📱 Beta Request' }
+        };
+
+        function renderFeedbackWall() {
+            const container = document.getElementById('feedback-wall-list');
+            const badge = document.getElementById('fb-count-badge');
+            badge.textContent = currentLang === 'uk' 
+                ? `${feedbackEntries.length} записів` 
+                : `${feedbackEntries.length} entries`;
+
+            container.innerHTML = feedbackEntries.map(item => {
+                const catLabel = (categoryBadgeMap[currentLang] && categoryBadgeMap[currentLang][item.category]) || item.category;
+                return `
+                    <div class="retro-card-flat p-4 space-y-2">
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-bold border-b border-[var(--border-color)]/30 pb-1.5">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 bg-[var(--bg-panel)] text-[var(--text-inverted)] rounded">${catLabel}</span>
+                                <span class="font-extrabold">${escapeHtml(item.author)}</span>
+                                ${item.device ? `<span class="opacity-75">[${escapeHtml(item.device)}]</span>` : ''}
+                            </div>
+                            <span class="opacity-70">${item.date || ''}</span>
+                        </div>
+                        <p class="text-sm leading-relaxed">${escapeHtml(item.message)}</p>
+                        <div class="flex justify-end pt-1">
+                            <button onclick="upvoteFeedback('${item.id}')" class="retro-btn px-2.5 py-1 text-xs flex items-center gap-1.5">
+                                ▲ <span>${item.likes || 0}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function submitFeedback(e) {
+            e.preventDefault();
+            const author = document.getElementById('fb-author').value.trim();
+            const device = document.getElementById('fb-device').value.trim();
+            const category = document.getElementById('fb-category').value;
+            const message = document.getElementById('fb-message').value.trim();
+            const statusMsg = document.getElementById('fb-status-msg');
+
+            if (!author || !message) return;
+
+            const newEntry = {
+                id: 'local-' + Date.now(),
+                author,
+                device: device || 'Android',
+                category,
+                message,
+                likes: 1,
+                date: new Date().toLocaleDateString('uk-UA')
+            };
+
+            feedbackEntries.unshift(newEntry);
+            renderFeedbackWall();
+
+            document.getElementById('fb-message').value = '';
+            statusMsg.textContent = currentLang === 'uk' 
+                ? "✓ Запис додано до бортового журналу! Дякую за зворотний зв'язок." 
+                : "✓ Entry posted to the logbook! Thanks for your feedback.";
+            statusMsg.classList.remove('hidden');
+            setTimeout(() => statusMsg.classList.add('hidden'), 4000);
+        }
+
+        function upvoteFeedback(id) {
+            const target = feedbackEntries.find(item => item.id === id);
+            if (target) {
+                target.likes = (target.likes || 0) + 1;
+                renderFeedbackWall();
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // ==========================================
+        // 5. MODALS & CLOCK INITIALIZATION
+        // ==========================================
+        function openApkModal() { document.getElementById('apk-modal').classList.remove('hidden'); }
+        function closeApkModal() { document.getElementById('apk-modal').classList.add('hidden'); }
+        function prefillBetaRequest() {
+            closeApkModal();
+            document.getElementById('fb-category').value = 'BETA';
+            const msgBox = document.getElementById('fb-message');
+            msgBox.value = currentLang === 'uk' 
+                ? "Привіт! Хочу протестувати бета-версію Amber Home APK. Мій контакт (Telegram / пошта): " 
+                : "Hey! I'd love to test the Amber Home Beta APK. My contact (Reddit / Telegram / Email): ";
+            msgBox.focus();
+        }
+
+        function openArticlePreviewModal() { document.getElementById('article-modal').classList.remove('hidden'); }
+        function closeArticlePreviewModal() { document.getElementById('article-modal').classList.add('hidden'); }
+
+        function openConfigLinkModal() {
+            const currentHref = document.getElementById('base-mono-link').getAttribute('href');
+            document.getElementById('custom-base-url-input').value = currentHref;
+            document.getElementById('config-modal').classList.remove('hidden');
+        }
+        function closeConfigLinkModal() { document.getElementById('config-modal').classList.add('hidden'); }
+        function saveCustomBaseUrl() {
+            const val = document.getElementById('custom-base-url-input').value.trim();
+            if (val && val.startsWith('http')) {
+                document.getElementById('base-mono-link').setAttribute('href', val);
+                closeConfigLinkModal();
+            }
+        }
+
+        function updateLiveClock() {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const timeStr = `${hh}:${mm}`;
+            const pClock = document.getElementById('phone-clock');
+            const hClock = document.getElementById('header-clock');
+            if (pClock) pClock.textContent = timeStr;
+            if (hClock) hClock.textContent = timeStr;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (SITE_CONFIG.baseMonoUrl) {
+                document.getElementById('base-mono-link').setAttribute('href', SITE_CONFIG.baseMonoUrl);
+            }
+            document.getElementById('goal1-bar').style.width = (SITE_CONFIG.goal1Percent || 33) + '%';
+            document.getElementById('goal2-bar').style.width = (SITE_CONFIG.goal2Percent || 18) + '%';
+
+            updateLiveClock();
+            setInterval(updateLiveClock, 15000);
+            renderPhoneScreen();
+            renderFeedbackWall();
+        });
+    </script>
+</body>
+</html>
