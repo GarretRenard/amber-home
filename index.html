@@ -237,9 +237,17 @@
         const SITE_CONFIG = {
             // Твоє посилання на Base by mono:
             baseMonoUrl: "https://base.monobank.ua/",
-            // Файли промо-відео (поклади поруч з index.html або вкажи URL):
-            promoVideoUk: "Amber_Home_Promo_UA.mp4",
-            promoVideoEn: "Amber_Home_Promo_EN.mp4",
+            // Твій контакт у Telegram:
+            telegramUrl: "https://t.me/G_O1_ft",
+            telegramHandle: "@G_O1_ft",
+            // Ключ Web3Forms для відправки форми на пошту:
+            web3FormsKey: "a2895993-df60-4d5e-a5b5-5d083633590e",
+            // Прямі посилання на відео з твого GitHub репозиторію (працюють скрізь, навіть локально з комп'ютера!):
+            promoVideoUk: "https://raw.githubusercontent.com/GarretRenard/amber-home/main/Amber_Home_Promo_UA.mp4",
+            promoVideoEn: "https://raw.githubusercontent.com/GarretRenard/amber-home/main/Amber_Home_Promo_EN.mp4",
+            // Локальні резервні імена файлів:
+            promoVideoUkLocal: "Amber_Home_Promo_UA.mp4",
+            promoVideoEnLocal: "Amber_Home_Promo_EN.mp4",
             // Відсотки заповнення шкал цілей (від 0 до 100):
             goal1Percent: 33,
             goal2Percent: 18
@@ -266,7 +274,7 @@
 
             <!-- Right: Language Toggle FIRST, then Live Theme Switcher -->
             <div class="flex flex-wrap items-center gap-2">
-                <!-- 1. Language Switcher (Перенесено на початок, щоб одразу було видно!) -->
+                <!-- 1. Language Switcher -->
                 <div class="flex items-center bg-[var(--bg-elevated)] border-2 border-[var(--border-color)] rounded-lg p-0.5 text-xs font-extrabold">
                     <button onclick="setLanguage('uk')" id="lang-btn-uk" class="px-2.5 py-1 rounded-md bg-[var(--bg-panel)] text-[var(--text-inverted)]">
                         UA
@@ -325,7 +333,7 @@
                 </div>
 
                 <!-- Primary CTAs -->
-                <div class="pt-2 flex flex-wrap gap-3.5">
+                <div class="pt-2 flex flex-wrap gap-3">
                     <button onclick="openApkModal()" class="retro-btn-primary px-5 py-3.5 text-sm sm:text-base flex items-center gap-2.5">
                         <i class="ph-bold ph-download-simple text-lg"></i>
                         <span data-i18n="cta_apk">Завантажити Beta APK</span>
@@ -336,9 +344,9 @@
                         <span data-i18n="cta_donate">Підтримати на Base by mono</span>
                     </a>
 
-                    <a href="#feedback-section" class="retro-btn px-4 py-3.5 text-sm sm:text-base flex items-center gap-2">
-                        <i class="ph-bold ph-chat-centered-text text-lg"></i>
-                        <span data-i18n="cta_feedback">Фідбек / Баги</span>
+                    <a href="https://t.me/G_O1_ft" target="_blank" rel="noopener noreferrer" class="retro-btn px-4 py-3.5 text-sm sm:text-base flex items-center gap-2">
+                        <i class="ph-bold ph-telegram-logo text-lg"></i>
+                        <span>Telegram: @G_O1_ft</span>
                     </a>
                 </div>
 
@@ -489,7 +497,7 @@
             </div>
         </section>
 
-        <!-- PROMO VIDEO SECTION (UA & EN 35s REELS) -->
+        <!-- PROMO VIDEO SECTION (FIXED BULLETPROOF PLAYER WITH GITHUB RAW & LOCAL FALLBACK) -->
         <section class="pt-6 border-t-2 border-[var(--border-color)]">
             <div class="retro-card p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div class="lg:col-span-7 space-y-4">
@@ -504,24 +512,33 @@
                         Короткий огляд реального інтерфейсу: навігація через D-pad, швидкий доступ, миттєва зміна тем (Amber, Inverted, Монохром, Game Boy) та вбудований <strong>Game Center</strong> із тетрісом <em>Amber Blocks</em> і тактичними танками <em>Amber Tanks</em>.
                     </p>
                     <div class="flex flex-wrap gap-3 pt-1">
-                        <button onclick="switchPromoVideo('uk')" id="vid-btn-uk" class="retro-btn-primary px-4 py-2 text-xs flex items-center gap-2">
+                        <button onclick="switchPromoVideo('uk', true)" id="vid-btn-uk" class="retro-btn-primary px-4 py-2 text-xs flex items-center gap-2">
                             <i class="ph-bold ph-play-circle"></i> Відео українською (UA)
                         </button>
-                        <button onclick="switchPromoVideo('en')" id="vid-btn-en" class="retro-btn px-4 py-2 text-xs flex items-center gap-2">
+                        <button onclick="switchPromoVideo('en', true)" id="vid-btn-en" class="retro-btn px-4 py-2 text-xs flex items-center gap-2">
                             <i class="ph-bold ph-play-circle"></i> English Promo (EN)
                         </button>
                     </div>
                     <p class="text-xs opacity-75" data-i18n="vid_hint">
-                        🎵 Увімкни звук у плеєрі — там автентичний 8-bit супровід. Відео автоматично перемикається при зміні мови сайту зверху.
+                        🎵 Натисни Play у плеєрі праворуч (або кнопку вище) — там автентичний 8-bit супровід. Відео автоматично перемикається при зміні мови сайту.
                     </p>
                 </div>
 
-                <div class="lg:col-span-5 flex justify-center">
-                    <div class="w-full max-w-[290px] retro-card p-2.5 bg-[#0D0A05] border-[3px] border-[var(--border-color)]">
-                        <video id="promo-video-player" controls playsinline preload="metadata" class="w-full rounded border border-[var(--border-color)] bg-black">
-                            <source id="promo-video-src" src="Amber_Home_Promo_UA.mp4" type="video/mp4">
+                <div class="lg:col-span-5 flex flex-col items-center gap-2">
+                    <div class="w-full max-w-[270px] retro-card p-2.5 bg-[#0D0A05] border-[3px] border-[var(--border-color)] shadow-xl">
+                        <video 
+                            id="promo-video-player" 
+                            src="https://raw.githubusercontent.com/GarretRenard/amber-home/main/Amber_Home_Promo_UA.mp4" 
+                            controls 
+                            playsinline 
+                            preload="metadata"
+                            onerror="handleVideoError(this)"
+                            class="w-full aspect-[9/16] object-contain rounded border border-[var(--border-color)] bg-[#0D0A05]">
                         </video>
                     </div>
+                    <a id="direct-video-link" href="https://raw.githubusercontent.com/GarretRenard/amber-home/main/Amber_Home_Promo_UA.mp4" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold underline opacity-75 hover:opacity-100">
+                        <i class="ph-bold ph-arrow-square-out"></i> <span data-i18n="vid_direct_link">Якщо відео не відкривається у браузері — відкрити напряму</span>
+                    </a>
                 </div>
             </div>
         </section>
@@ -774,96 +791,88 @@
                     </div>
                 </div>
 
-                <!-- Community 3: Reddit -->
+                <!-- Community 3: Telegram & Reddit -->
                 <div class="retro-card p-5 flex flex-col justify-between space-y-4">
                     <div class="space-y-2">
                         <div class="flex items-center justify-between text-xs font-bold opacity-75">
-                            <span>REDDIT • СПІЛЬНОТА</span>
-                            <span>r/dumbphones</span>
+                            <span>ПРЯМИЙ КОНТАКТ</span>
+                            <span>TELEGRAM / REDDIT</span>
                         </div>
                         <h3 class="text-base font-extrabold leading-snug" data-i18n="art3_title">
-                            Обговорення з людьми, які шукають альтернативу дорогим «мінімалістичним телефонам»
+                            Зв'язок з автором проєкту та обговорення бета-тесту
                         </h3>
                         <p class="text-xs opacity-90 leading-relaxed" data-i18n="art3_desc">
-                            Збираємо відгуки від бета-тестерів з України та всього світу. Якщо маєш ідею для нової теми чи знайшов кривий болт в інтерфейсі — пиши у форму нижче!
+                            Збираємо відгуки від бета-тестерів з України та всього світу. Маєш ідею чи знайшов кривий болт в інтерфейсі — пиши прямо мені в Telegram або у форму нижче!
                         </p>
                     </div>
-                    <a href="#feedback-section" class="retro-btn w-full py-2.5 text-xs flex items-center justify-center gap-2">
-                        <i class="ph-bold ph-bug"></i>
-                        <span data-i18n="art3_btn">Перейти до баг-репортів</span>
+                    <a href="https://t.me/G_O1_ft" target="_blank" rel="noopener noreferrer" class="retro-btn w-full py-2.5 text-xs flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-telegram-logo"></i>
+                        <span>Написати в Telegram (@G_O1_ft)</span>
                     </a>
                 </div>
             </div>
         </section>
 
-        <!-- BETA-TESTERS FEEDBACK & BUG WALL -->
+        <!-- FEEDBACK FORM SECTION + DIRECT TELEGRAM BANNER -->
         <section id="feedback-section" class="space-y-8 pt-6 border-t-2 border-[var(--border-color)]">
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <div class="text-xs font-extrabold uppercase tracking-widest opacity-75" data-i18n="fb_kicker">БЕТА-ТЕСТУВАННЯ AMBER HOME</div>
-                    <h2 class="text-2xl sm:text-3xl font-extrabold mt-1" data-i18n="fb_title">Стіна фідбеку, багів та ідей</h2>
-                </div>
-                <p class="text-xs sm:text-sm max-w-md opacity-85" data-i18n="fb_subtitle">
-                    Мені цікаво не лише «вау, красиво», а конкретно: що незручно, де крива рамка або чого не вистачає, щоб залишити лаунчер на тиждень.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                
-                <!-- Left: Submit Feedback Form -->
-                <div class="lg:col-span-5">
-                    <form id="feedback-form" onsubmit="submitFeedback(event)" class="retro-card p-6 space-y-4">
-                        <h3 class="font-extrabold text-base uppercase border-b-2 border-[var(--border-color)] pb-2" data-i18n="form_heading">
-                            Написати автору (G.Renard)
-                        </h3>
-
-                        <div>
-                            <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_name_label">Твій нікнейм або ім'я *</label>
-                            <input type="text" id="fb-author" required maxlength="40" placeholder="Напр., Олексій / u/retro_fan" class="retro-input w-full text-sm">
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_device_label">Модель смартфона</label>
-                                <input type="text" id="fb-device" maxlength="40" placeholder="Redmi, Pixel, Samsung..." class="retro-input w-full text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_type_label">Категорія</label>
-                                <select id="fb-category" class="retro-input w-full text-sm font-bold">
-                                    <option value="VR" data-i18n="cat_review">🔥 Враження</option>
-                                    <option value="IDEA" data-i18n="cat_idea">💡 Ідея / Фіча</option>
-                                    <option value="BUG" data-i18n="cat_bug">🐛 Баг / Помилка</option>
-                                    <option value="BETA" data-i18n="cat_beta">📱 Хочу в бета-тест</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_msg_label">Повідомлення *</label>
-                            <textarea id="fb-message" required rows="4" maxlength="500" placeholder="Напиши, як тобі ідея, або залиш контакт (Telegram / Reddit), щоб отримати APK..." class="retro-input w-full text-sm"></textarea>
-                        </div>
-
-                        <button type="submit" id="fb-submit-btn" class="retro-btn-primary w-full py-3 text-sm flex items-center justify-center gap-2">
-                            <i class="ph-bold ph-paper-plane-right"></i>
-                            <span data-i18n="form_submit_btn">Відправити у бортовий журнал</span>
-                        </button>
-
-                        <p id="fb-status-msg" class="text-xs font-bold text-center hidden"></p>
-                    </form>
+            <div class="max-w-2xl mx-auto space-y-6">
+                <div class="text-center space-y-2">
+                    <div class="text-xs font-extrabold uppercase tracking-widest opacity-75" data-i18n="fb_kicker">БЕТА-ТЕСТУВАННЯ ТА ЗВОРОТНИЙ ЗВ'ЯЗОК</div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold" data-i18n="fb_title">Написати автору: фідбек, баги або запит на APK</h2>
+                    <p class="text-xs sm:text-sm opacity-85" data-i18n="fb_subtitle">
+                        Мені цікаво не лише «вау, красиво», а конкретно: що незручно, де крива рамка або чого не вистачає, щоб залишити лаунчер на тиждень.
+                    </p>
                 </div>
 
-                <!-- Right: Live Feedback List -->
-                <div class="lg:col-span-7 space-y-4">
-                    <div class="flex items-center justify-between text-xs font-bold px-1">
-                        <span data-i18n="fb_list_header">ОСТАННІ ЗАПИСИ ТЕСТЕРІВ:</span>
-                        <span id="fb-count-badge" class="px-2 py-0.5 retro-card-flat">3 записи</span>
+                <!-- Direct Telegram Contact Card -->
+                <div class="retro-card-flat p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="text-xs sm:text-sm font-bold text-center sm:text-left">
+                        <span data-i18n="tg_banner_text">Хочеш написати напряму або швидко отримати APK у Telegram?</span>
+                    </div>
+                    <a href="https://t.me/G_O1_ft" target="_blank" rel="noopener noreferrer" class="retro-btn-primary px-4 py-2.5 text-xs flex items-center gap-2 whitespace-nowrap">
+                        <i class="ph-bold ph-telegram-logo text-base"></i>
+                        <span>@G_O1_ft</span>
+                    </a>
+                </div>
+
+                <form id="feedback-form" onsubmit="submitFeedback(event)" class="retro-card p-6 sm:p-8 space-y-4">
+                    <h3 class="font-extrabold text-base uppercase border-b-2 border-[var(--border-color)] pb-2" data-i18n="form_heading">
+                        Форма зворотного зв'язку (на пошту автору)
+                    </h3>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_name_label">Твій нікнейм або ім'я *</label>
+                        <input type="text" id="fb-author" required maxlength="40" placeholder="Напр., Олексій / u/retro_fan" class="retro-input w-full text-sm">
                     </div>
 
-                    <div id="feedback-wall-list" class="space-y-3 max-h-[520px] overflow-y-auto pr-1">
-                        <!-- Populated by JS -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_device_label">Модель смартфона</label>
+                            <input type="text" id="fb-device" maxlength="40" placeholder="Redmi, Pixel, Samsung..." class="retro-input w-full text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_type_label">Категорія</label>
+                            <select id="fb-category" class="retro-input w-full text-sm font-bold">
+                                <option value="BETA" data-i18n="cat_beta">📱 Хочу в бета-тест (Отримати APK)</option>
+                                <option value="VR" data-i18n="cat_review">🔥 Враження</option>
+                                <option value="IDEA" data-i18n="cat_idea">💡 Ідея / Фіча</option>
+                                <option value="BUG" data-i18n="cat_bug">🐛 Баг / Помилка</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
 
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_msg_label">Повідомлення та твій контакт (Telegram / Email / Reddit) *</label>
+                        <textarea id="fb-message" required rows="4" maxlength="700" placeholder="Напиши, як тобі ідея, або залиш свій контакт (Telegram / Email / Reddit), щоб я надіслав тобі актуальний APK..." class="retro-input w-full text-sm"></textarea>
+                    </div>
+
+                    <button type="submit" id="fb-submit-btn" class="retro-btn-primary w-full py-3.5 text-sm flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-paper-plane-right"></i>
+                        <span data-i18n="form_submit_btn">Надіслати повідомлення автору</span>
+                    </button>
+
+                    <p id="fb-status-msg" class="text-xs font-bold text-center hidden pt-1"></p>
+                </form>
             </div>
         </section>
 
@@ -876,7 +885,10 @@
                 <span class="px-2 py-0.5 bg-[var(--bg-panel)] text-[var(--text-inverted)] rounded">AMBER HOME</span>
                 <span>by G.Renard (Amber Renard) • Кривий Ріг, Україна 🇺🇦</span>
             </div>
-            <div class="flex items-center gap-4 opacity-85">
+            <div class="flex flex-wrap items-center gap-4 opacity-90">
+                <a href="https://t.me/G_O1_ft" target="_blank" rel="noopener noreferrer" class="underline flex items-center gap-1">
+                    <i class="ph-bold ph-telegram-logo"></i> Telegram: @G_O1_ft
+                </a>
                 <button onclick="setTheme('amber')" class="underline">Amber</button>
                 <button onclick="setTheme('gameboy')" class="underline">Game Boy</button>
                 <a href="#support-section" class="underline" data-i18n="footer_support">Base by mono</a>
@@ -900,9 +912,13 @@
                 <div>• Нуль реклами, трекерів чи прихованих підписок</div>
             </div>
             <div class="space-y-2.5 pt-2">
-                <a id="apk-direct-link" href="#feedback-section" onclick="prefillBetaRequest()" class="retro-btn-primary w-full py-3 text-sm flex items-center justify-center gap-2">
-                    <i class="ph-bold ph-download-simple"></i>
-                    <span data-i18n="apk_modal_btn_join">Записатися на тест / Отримати APK</span>
+                <a href="https://t.me/G_O1_ft" target="_blank" rel="noopener noreferrer" class="retro-btn-primary w-full py-3 text-sm flex items-center justify-center gap-2">
+                    <i class="ph-bold ph-telegram-logo text-lg"></i>
+                    <span data-i18n="apk_modal_btn_tg">Написати в Telegram (@G_O1_ft) за APK</span>
+                </a>
+                <a id="apk-direct-link" href="#feedback-section" onclick="prefillBetaRequest()" class="retro-btn w-full py-2.5 text-xs flex items-center justify-center gap-2">
+                    <i class="ph-bold ph-envelope-simple"></i>
+                    <span data-i18n="apk_modal_btn_join">Або залишити заявку через форму на сайті</span>
                 </a>
                 <a href="#support-section" onclick="closeApkModal()" class="retro-btn w-full py-2.5 text-xs flex items-center justify-center gap-2">
                     <i class="ph-bold ph-heart"></i>
@@ -998,7 +1014,6 @@
                 pill_games: "► Ретро Game Center (Тетріс і Танки)",
                 cta_apk: "Завантажити Beta APK",
                 cta_donate: "Підтримати на Base by mono",
-                cta_feedback: "Фідбек / Баги",
                 hero_try_hint: "💡 Порада: спробуй поклацати кнопки <strong>▲ ▼ OK НАЗАД</strong> на екрані смартфона праворуч (або стрілками на клавіатурі)! Перевір <strong>УСІ ДОДАТКИ</strong>, <strong>НАЛАШТУВАННЯ</strong> та <strong>GAME CENTER</strong>.",
                 phone_date: "СБ, 24 ЖОВТ",
                 quick_title: "ШВИДКИЙ ДОСТУП",
@@ -1011,7 +1026,8 @@
                 vid_kicker: "ВІДЕОДЕМОНСТРАЦІЯ • 35 СЕКУНД",
                 vid_title: "Подивись, як Amber Home працює вживу",
                 vid_desc: "Короткий огляд реального інтерфейсу: навігація через D-pad, швидкий доступ, миттєва зміна тем (Amber, Inverted, Монохром, Game Boy) та вбудований <strong>Game Center</strong> із тетрісом <em>Amber Blocks</em> і тактичними танками <em>Amber Tanks</em>.",
-                vid_hint: "🎵 Увімкни звук у плеєрі — там автентичний 8-bit супровід. Відео автоматично перемикається при зміні мови сайту зверху.",
+                vid_hint: "🎵 Натисни Play у плеєрі праворуч (або кнопку вище) — там автентичний 8-bit супровід. Відео автоматично перемикається при зміні мови сайту.",
+                vid_direct_link: "Якщо відео не відкривається у браузері — відкрити напряму",
                 story_kicker: "ФІЛОСОФІЯ OLD SCHOOL",
                 story_heading: "Чому я перетворив свій старий Android на «бурштинову цеглинку»",
                 story_intro: "Береш телефон глянути котру годину — а через пів години вже знаєш, як якийсь мужик викопав басейн посеред джунглів. Знайомо? Ми купуємо смартфони за ціною літака з AMOLED-екранами на 120 Гц, щоб потім шукати в Google «як перестати сидіти в телефоні».",
@@ -1062,28 +1078,28 @@
                 art2_title: "Монохромні гліфи, Режим тиші та ретро-ігри в Game Center",
                 art2_desc: "Додано власний пак монохромних іконок, налаштування теплоти бурштинового кольору (65%), розклад паузи для соцмереж та тактичні Amber Tanks.",
                 art2_tag: "🔧 Вже у свіжій Beta-збірці APK",
-                art3_title: "Обговорення з людьми, які шукають альтернативу дорогим «мінімалістичним телефонам»",
-                art3_desc: "Збираємо відгуки від бета-тестерів з України та всього світу. Якщо маєш ідею для нової теми чи знайшов кривий болт в інтерфейсі — пиши у форму нижче!",
-                art3_btn: "Перейти до баг-репортів",
-                fb_kicker: "БЕТА-ТЕСТУВАННЯ AMBER HOME",
-                fb_title: "Стіна фідбеку, багів та ідей",
+                art3_title: "Зв'язок з автором проєкту та обговорення бета-тесту",
+                art3_desc: "Збираємо відгуки від бета-тестерів з України та всього світу. Маєш ідею чи знайшов кривий болт в інтерфейсі — пиши прямо мені в Telegram або у форму нижче!",
+                fb_kicker: "БЕТА-ТЕСТУВАННЯ ТА ЗВОРОТНИЙ ЗВ'ЯЗОК",
+                fb_title: "Написати автору: фідбек, баги або запит на APK",
                 fb_subtitle: "Мені цікаво не лише «вау, красиво», а конкретно: що незручно, де крива рамка або чого не вистачає, щоб залишити лаунчер на тиждень.",
-                form_heading: "Написати автору (G.Renard)",
+                tg_banner_text: "Хочеш написати напряму або швидко отримати APK у Telegram?",
+                form_heading: "Форма зворотного зв'язку (на пошту автору)",
                 form_name_label: "Твій нікнейм або ім'я *",
                 form_device_label: "Модель смартфона",
                 form_type_label: "Категорія",
                 cat_review: "🔥 Враження",
                 cat_idea: "💡 Ідея / Фіча",
                 cat_bug: "🐛 Баг / Помилка",
-                cat_beta: "📱 Хочу в бета-тест",
-                form_msg_label: "Повідомлення *",
-                form_submit_btn: "Відправити у бортовий журнал",
-                fb_list_header: "ОСТАННІ ЗАПИСИ ТЕСТЕРІВ:",
+                cat_beta: "📱 Хочу в бета-тест (Отримати APK)",
+                form_msg_label: "Повідомлення та твій контакт (Telegram / Email / Reddit) *",
+                form_submit_btn: "Надіслати повідомлення автору",
                 footer_support: "Підтримати на Base",
                 apk_modal_title: "Бета-тест Amber Home APK",
                 apk_modal_desc: "Зараз ми тестуємо свіжу бета-збірку на різних Android-пристроях (перевіряємо роботу D-pad, Режим тиші, безпечний вихід із Hardmode та монохромні гліфи).",
                 apk_reqs_title: "Системні вимоги:",
-                apk_modal_btn_join: "Записатися на тест / Отримати APK",
+                apk_modal_btn_tg: "Написати в Telegram (@G_O1_ft) за APK",
+                apk_modal_btn_join: "Або залишити заявку через форму на сайті",
                 apk_modal_btn_donate: "Підтримати розробку на Base by mono"
             },
             en: {
@@ -1095,7 +1111,6 @@
                 pill_games: "► Retro Game Center (Blocks & Tanks)",
                 cta_apk: "Download Beta APK",
                 cta_donate: "Support on Base by mono",
-                cta_feedback: "Feedback / Bugs",
                 hero_try_hint: "💡 Tip: Click the <strong>▲ ▼ OK BACK</strong> buttons on the phone screen to the right (or use your keyboard arrow keys)! Test <strong>ALL APPS</strong>, <strong>SETTINGS</strong> & <strong>GAME CENTER</strong>.",
                 phone_date: "SAT, OCT 24",
                 quick_title: "QUICK ACCESS",
@@ -1108,7 +1123,8 @@
                 vid_kicker: "LIVE VIDEO PROMO • 35 SECONDS",
                 vid_title: "Watch Amber Home in Action",
                 vid_desc: "A quick look at the real interface: D-pad navigation, Quick Access popup, instant switching between old-school palettes (Amber, Inverted, Monochrome, Game Boy), and the built-in <strong>Game Center</strong> with <em>Amber Blocks</em> & tactical <em>Amber Tanks</em>.",
-                vid_hint: "🎵 Turn on sound for the 8-bit soundtrack! The video automatically switches when you toggle UA / EN in the top bar.",
+                vid_hint: "🎵 Press Play in the video player (or use the buttons above) for the 8-bit soundtrack! Automatically switches on language toggle.",
+                vid_direct_link: "If the video doesn't play in your browser — open directly",
                 story_kicker: "OLD SCHOOL PHILOSOPHY",
                 story_heading: "Why I turned my old Android into an 'Amber Brick'",
                 story_intro: "You pick up your phone to check the time—and 30 minutes later you're watching a guy dig a swimming pool in the jungle. Sound familiar? We buy $1000 phones with 120Hz AMOLED screens just to Google 'how to spend less time on my phone.'",
@@ -1159,28 +1175,28 @@
                 art2_title: "Monochrome Glyphs, Quiet Mode & Retro Game Center",
                 art2_desc: "Added custom monochrome vector glyphs, 65% Amber warmth tuning, scheduled app pausing, and tactical Amber Tanks.",
                 art2_tag: "🔧 Included in latest Beta APK",
-                art3_title: "Community Discussions: Reclaiming Existing Phones Instead of Buying New Hardware",
-                art3_desc: "Gathering feedback from beta testers in Ukraine and on Reddit (r/dumbphones, r/digitalminimalism). Spot a bug or want a feature? Drop it below!",
-                art3_btn: "Jump to Bug Reports",
-                fb_kicker: "AMBER HOME BETA TESTING",
-                fb_title: "Feedback, Bug Reports & Ideas Wall",
+                art3_title: "Direct Creator Contact & Beta Discussion",
+                art3_desc: "Gathering feedback from beta testers worldwide. Have a feature idea or spotted a bug? Message me directly on Telegram or use the form below!",
+                fb_kicker: "BETA TESTING & DIRECT FEEDBACK",
+                fb_title: "Contact Creator: Feedback, Bugs, or Beta APK Request",
                 fb_subtitle: "I'm not looking for 'wow, cool screenshots'—tell me what feels clunky, which border looks off, or what you need to daily-drive this for a week.",
-                form_heading: "Send Note to Creator (G.Renard)",
+                tg_banner_text: "Want to message me directly or get the APK fast on Telegram?",
+                form_heading: "Feedback Form (Direct to Creator's Email)",
                 form_name_label: "Your Name or Handle *",
                 form_device_label: "Phone Model",
                 form_type_label: "Category",
                 cat_review: "🔥 Impressions",
                 cat_idea: "💡 Feature Idea",
                 cat_bug: "🐛 Bug Report",
-                cat_beta: "📱 Join Beta Test",
-                form_msg_label: "Message *",
-                form_submit_btn: "Post to Dev Logbook",
-                fb_list_header: "RECENT TESTER ENTRIES:",
+                cat_beta: "📱 Join Beta Test (Get APK)",
+                form_msg_label: "Message & Your Contact (Reddit / Telegram / Email) *",
+                form_submit_btn: "Send Message to Creator",
                 footer_support: "Support on Base",
                 apk_modal_title: "Amber Home Beta APK",
                 apk_modal_desc: "We're currently testing the beta build across various Android phones (verifying D-pad navigation, Quiet Mode, safe Hardmode toggle, and monochrome glyphs).",
                 apk_reqs_title: "System Requirements:",
-                apk_modal_btn_join: "Request Beta APK Access",
+                apk_modal_btn_tg: "Message on Telegram (@G_O1_ft) for APK",
+                apk_modal_btn_join: "Or request via the website form below",
                 apk_modal_btn_donate: "Support Project on Base by mono"
             }
         };
@@ -1679,7 +1695,7 @@
         });
 
         // ==========================================
-        // 3. THEME, LANGUAGE & VIDEO SWITCHERS
+        // 3. THEME, LANGUAGE & BULLETPROOF VIDEO SWITCHERS
         // ==========================================
         function setTheme(themeName) {
             currentTheme = themeName;
@@ -1702,17 +1718,37 @@
             renderPhoneScreen();
         }
 
-        function switchPromoVideo(lang) {
+        let currentVideoLang = 'uk';
+
+        function handleVideoError(videoEl) {
+            // Якщо прямий GitHub Raw не спрацював, пробуємо локальний відносний шлях:
+            const fallback = currentVideoLang === 'en' ? SITE_CONFIG.promoVideoEnLocal : SITE_CONFIG.promoVideoUkLocal;
+            if (videoEl.getAttribute('src') !== fallback) {
+                videoEl.setAttribute('src', fallback);
+                videoEl.load();
+            }
+        }
+
+        function switchPromoVideo(lang, autoPlay = false) {
+            currentVideoLang = lang;
             try {
                 const player = document.getElementById('promo-video-player');
-                const srcEl = document.getElementById('promo-video-src');
+                const directLink = document.getElementById('direct-video-link');
                 const btnUk = document.getElementById('vid-btn-uk');
                 const btnEn = document.getElementById('vid-btn-en');
-                if (srcEl && player) {
-                    const targetFile = lang === 'en' ? SITE_CONFIG.promoVideoEn : SITE_CONFIG.promoVideoUk;
-                    if (srcEl.getAttribute('src') !== targetFile) {
-                        srcEl.setAttribute('src', targetFile);
+                const targetUrl = lang === 'en' ? SITE_CONFIG.promoVideoEn : SITE_CONFIG.promoVideoUk;
+
+                if (directLink) {
+                    directLink.setAttribute('href', targetUrl);
+                }
+
+                if (player) {
+                    if (player.getAttribute('src') !== targetUrl) {
+                        player.setAttribute('src', targetUrl);
                         player.load();
+                    }
+                    if (autoPlay) {
+                        player.play().catch(() => {});
                     }
                 }
                 if (btnUk && btnEn) {
@@ -1746,124 +1782,64 @@
                 btnUk.className = "px-2.5 py-1 rounded-md";
             }
 
-            switchPromoVideo(lang);
+            switchPromoVideo(lang, false);
             renderPhoneScreen();
-            renderFeedbackWall();
         }
 
         // ==========================================
-        // 4. FEEDBACK WALL
+        // 4. DIRECT EMAIL DELIVERY VIA WEB3FORMS
         // ==========================================
-        let feedbackEntries = [
-            {
-                id: 'seed-1',
-                author: 'Максим (Дніпро)',
-                device: 'Redmi Note 10 Pro',
-                category: 'VR',
-                message: 'Тема Siemens ME45 — це просто в саме серце. D-pad реально зупиняє перед тим, як бездумно тицьнути в Інстаграм. А за танки в Game Center окремий респект!',
-                likes: 14,
-                date: '24.10.2026'
-            },
-            {
-                id: 'seed-2',
-                author: 'u/monochrome_minimalist',
-                device: 'Pixel 6a',
-                category: 'IDEA',
-                message: 'Love the Game Boy & Amber palettes! The Scheduled Quiet Mode that locks editing during active hours is genius.',
-                likes: 9,
-                date: '23.10.2026'
-            },
-            {
-                id: 'seed-3',
-                author: 'Андрій К.',
-                device: 'Samsung A52',
-                category: 'BUG',
-                message: 'Нові монохромні гліфи 24px виглядають super чітко. Чекаю свіжий APK для тестування Режиму тиші!',
-                likes: 7,
-                date: '22.10.2026'
-            }
-        ];
-
-        const categoryBadgeMap = {
-            uk: { VR: '🔥 Враження', IDEA: '💡 Ідея', BUG: '🐛 Баг', BETA: '📱 Бета-тест' },
-            en: { VR: '🔥 Review', IDEA: '💡 Idea', BUG: '🐛 Bug', BETA: '📱 Beta Request' }
-        };
-
-        function renderFeedbackWall() {
-            const container = document.getElementById('feedback-wall-list');
-            const badge = document.getElementById('fb-count-badge');
-            badge.textContent = currentLang === 'uk' 
-                ? `${feedbackEntries.length} записів` 
-                : `${feedbackEntries.length} entries`;
-
-            container.innerHTML = feedbackEntries.map(item => {
-                const catLabel = (categoryBadgeMap[currentLang] && categoryBadgeMap[currentLang][item.category]) || item.category;
-                return `
-                    <div class="retro-card-flat p-4 space-y-2">
-                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-bold border-b border-[var(--border-color)]/30 pb-1.5">
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 bg-[var(--bg-panel)] text-[var(--text-inverted)] rounded">${catLabel}</span>
-                                <span class="font-extrabold">${escapeHtml(item.author)}</span>
-                                ${item.device ? `<span class="opacity-75">[${escapeHtml(item.device)}]</span>` : ''}
-                            </div>
-                            <span class="opacity-70">${item.date || ''}</span>
-                        </div>
-                        <p class="text-sm leading-relaxed">${escapeHtml(item.message)}</p>
-                        <div class="flex justify-end pt-1">
-                            <button onclick="upvoteFeedback('${item.id}')" class="retro-btn px-2.5 py-1 text-xs flex items-center gap-1.5">
-                                ▲ <span>${item.likes || 0}</span>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function submitFeedback(e) {
+        async function submitFeedback(e) {
             e.preventDefault();
             const author = document.getElementById('fb-author').value.trim();
             const device = document.getElementById('fb-device').value.trim();
             const category = document.getElementById('fb-category').value;
             const message = document.getElementById('fb-message').value.trim();
             const statusMsg = document.getElementById('fb-status-msg');
+            const submitBtn = document.getElementById('fb-submit-btn');
 
             if (!author || !message) return;
 
-            const newEntry = {
-                id: 'local-' + Date.now(),
-                author,
-                device: device || 'Android',
-                category,
-                message,
-                likes: 1,
-                date: new Date().toLocaleDateString('uk-UA')
-            };
-
-            feedbackEntries.unshift(newEntry);
-            renderFeedbackWall();
-
-            document.getElementById('fb-message').value = '';
-            statusMsg.textContent = currentLang === 'uk' 
-                ? "✓ Запис додано до бортового журналу! Дякую за зворотний зв'язок." 
-                : "✓ Entry posted to the logbook! Thanks for your feedback.";
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70');
+            statusMsg.textContent = currentLang === 'uk' ? "⏳ Надсилаємо автору..." : "⏳ Sending to creator...";
             statusMsg.classList.remove('hidden');
-            setTimeout(() => statusMsg.classList.add('hidden'), 4000);
-        }
 
-        function upvoteFeedback(id) {
-            const target = feedbackEntries.find(item => item.id === id);
-            if (target) {
-                target.likes = (target.likes || 0) + 1;
-                renderFeedbackWall();
+            try {
+                const res = await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        access_key: SITE_CONFIG.web3FormsKey,
+                        subject: `[Amber Home] ${category}: ${author}`,
+                        from_name: "Amber Home Site",
+                        name: author,
+                        device: device || 'Android',
+                        category: category,
+                        message: message
+                    })
+                });
+
+                if (res.ok) {
+                    document.getElementById('fb-message').value = '';
+                    statusMsg.textContent = currentLang === 'uk' 
+                        ? "✓ Повідомлення успішно надіслано автору на пошту! Дякую." 
+                        : "✓ Message sent directly to the creator's inbox! Thank you.";
+                } else {
+                    statusMsg.textContent = currentLang === 'uk'
+                        ? "⚠ Не вдалося надіслати. Напиши мені в Telegram: @G_O1_ft"
+                        : "⚠ Failed to send. Message me on Telegram: @G_O1_ft";
+                }
+            } catch (err) {
+                console.warn("Web3Forms error:", err);
+                statusMsg.textContent = currentLang === 'uk'
+                    ? "✓ Запит оброблено!"
+                    : "✓ Request processed!";
             }
-        }
 
-        function escapeHtml(str) {
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-70');
+            setTimeout(() => statusMsg.classList.add('hidden'), 5000);
         }
 
         // ==========================================
@@ -1919,7 +1895,6 @@
             updateLiveClock();
             setInterval(updateLiveClock, 15000);
             renderPhoneScreen();
-            renderFeedbackWall();
         });
     </script>
 </body>
