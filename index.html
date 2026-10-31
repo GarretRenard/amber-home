@@ -917,6 +917,9 @@
                 <a href="https://t.me/G_O1_ft" target="_blank" rel="noopener noreferrer" class="underline flex items-center gap-1">
                     <i class="ph-bold ph-telegram-logo"></i> Telegram: @G_O1_ft
                 </a>
+                <a href="terms.html" data-legal-page="terms" data-i18n="legal_terms" class="underline">Правила та умови</a>
+                <a href="refund.html" data-legal-page="refund" data-i18n="legal_refund" class="underline">Повернення коштів</a>
+                <a href="contacts.html" data-legal-page="contacts" data-i18n="legal_contacts" class="underline">Контакти</a>
                 <button onclick="setTheme('amber')" class="underline">Amber</button>
                 <button onclick="setTheme('gameboy')" class="underline">Game Boy</button>
             </div>
@@ -1032,6 +1035,9 @@
                 art1_date: "ЖОВТЕНЬ 2026",
                 art2_label: "ОНОВЛЕННЯ",
                 art3_label: "ПРЯМИЙ КОНТАКТ",
+                legal_terms: "Правила та умови",
+                legal_refund: "Повернення коштів",
+                legal_contacts: "Контакти",
                 footer_location: "by G.Renard (Amber Renard) • Кривий Ріг, Україна 🇺🇦",
                 article_modal_title: "Мене задовбали сучасні смартфони (Уривок)",
                 article_modal_p1: "<strong>Зізнавайся. Було таке?</strong> Береш телефон, щоб подивитися, котра година. Дрібниця, секунд на десять. А потім — хоп! — ти вже знаєш, як якийсь мужик викопав басейн посеред джунглів, чому черговий депутат знову щось утнув... А котра година — так і не подивився.",
@@ -1145,6 +1151,9 @@
                 art1_date: "OCTOBER 2026",
                 art2_label: "UPDATE",
                 art3_label: "DIRECT CONTACT",
+                legal_terms: "Terms & Conditions",
+                legal_refund: "Refund Policy",
+                legal_contacts: "Contact Information",
                 footer_location: "by G.Renard (Amber Renard) • Kryvyi Rih, Ukraine 🇺🇦",
                 article_modal_title: "I Got Sick of Modern Smartphones (Excerpt)",
                 article_modal_p1: "<strong>Sound familiar?</strong> You pick up your phone to check the time. It should take ten seconds. Then suddenly you know how some guy dug a swimming pool in the jungle and what a politician did today... but you still haven't checked the time.",
@@ -1838,6 +1847,9 @@
             }
             document.querySelectorAll('[data-donation-link]').forEach(link => {
                 link.href = SITE_CONFIG.donationUrls[lang];
+            });
+            document.querySelectorAll('[data-legal-page]').forEach(link => {
+                link.href = link.getAttribute('data-legal-page') + '.html?lang=' + lang;
             });
             currentLang = lang;
             document.documentElement.lang = lang;
