@@ -151,6 +151,39 @@
             box-shadow: 0 1px 0 var(--border-color);
         }
 
+        /* Keep the APK download and request actions together at every viewport width. */
+        .hero-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+
+        .hero-apk-actions {
+            display: flex;
+            grid-column: 1 / -1;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .hero-apk-actions > * {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .hero-actions > a {
+            width: 100%;
+            min-width: 0;
+            justify-content: center;
+            text-align: center;
+        }
+
+        @media (max-width: 639px) {
+            .hero-actions {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
         /* Phone screen selection bar matching screenshot */
         .launcher-row {
             padding: 5px 10px;
@@ -235,22 +268,22 @@
          ===================================================================== -->
     <script>
         const SITE_CONFIG = {
-            // Твоє посилання на Base by mono:
-            baseMonoUrl: "https://base.monobank.ua/",
+            // Language-specific donation destinations:
+            donationUrls: {
+                uk: "https://secure.wayforpay.com/donate/amberhomeua",
+                en: "https://secure.wayforpay.com/donate/amberhome"
+            },
+            // Web3Forms access key for the feedback form:
+            web3FormsKey: "a2895993-df60-4d5e-a5b5-5d083633590e",
             // Твій контакт у Telegram:
             telegramUrl: "https://t.me/G_O1_ft",
             telegramHandle: "@G_O1_ft",
-            // Ключ Web3Forms для відправки форми на пошту:
-            web3FormsKey: "a2895993-df60-4d5e-a5b5-5d083633590e",
             // Прямі посилання на відео з твого GitHub репозиторію (працюють скрізь, навіть локально з комп'ютера!):
             promoVideoUk: "https://raw.githubusercontent.com/GarretRenard/amber-home/main/Amber_Home_Promo_UA.mp4",
             promoVideoEn: "https://raw.githubusercontent.com/GarretRenard/amber-home/main/Amber_Home_Promo_EN.mp4",
             // Локальні резервні імена файлів:
             promoVideoUkLocal: "Amber_Home_Promo_UA.mp4",
-            promoVideoEnLocal: "Amber_Home_Promo_EN.mp4",
-            // Відсотки заповнення шкал цілей (від 0 до 100):
-            goal1Percent: 33,
-            goal2Percent: 18
+            promoVideoEnLocal: "Amber_Home_Promo_EN.mp4"
         };
     </script>
 
@@ -328,25 +361,29 @@
                 <div class="flex flex-wrap gap-2 text-xs font-bold">
                     <span class="px-3 py-1.5 retro-card-flat">► D-Pad & Hardmode</span>
                     <span class="px-3 py-1.5 retro-card-flat" data-i18n="pill_eyes">► Комфорт для зору (115%+)</span>
-                    <span class="px-3 py-1.5 retro-card-flat" data-i18n="pill_noads">► Нуль реклами та сміття</span>
                     <span class="px-3 py-1.5 retro-card-flat" data-i18n="pill_games">► Ретро Game Center (Тетріс і Танки)</span>
                 </div>
 
                 <!-- Primary CTAs -->
-                <div class="pt-2 flex flex-wrap gap-3">
-                    <button onclick="openApkModal()" class="retro-btn-primary px-5 py-3.5 text-sm sm:text-base flex items-center gap-2.5">
-                        <i class="ph-bold ph-download-simple text-lg"></i>
-                        <span data-i18n="cta_apk">Завантажити Beta APK</span>
-                    </button>
-
-                    <a href="#support-section" class="retro-btn px-5 py-3.5 text-sm sm:text-base flex items-center gap-2.5">
+                <div class="pt-2 hero-actions">
+                    <div class="hero-apk-actions">
+                        <button onclick="openApkModal()" class="retro-btn-primary w-full sm:w-auto px-5 py-3.5 text-sm sm:text-base flex items-center justify-center gap-2.5">
+                            <i class="ph-bold ph-download-simple text-lg"></i>
+                            <span data-i18n="cta_apk">Отримати APK</span>
+                        </button>
+                        <a id="hero-apk-form-link" href="#feedback-section" onclick="prefillBetaRequest()" class="retro-btn w-full py-2.5 text-xs flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-envelope-simple"></i>
+                            <span data-i18n="apk_modal_btn_join">Або залишити заявку через форму на сайті</span>
+                        </a>
+                    </div>
+                <a data-donation-link href="https://secure.wayforpay.com/donate/amberhomeua" target="_blank" rel="noopener noreferrer" class="retro-btn px-5 py-3.5 text-sm sm:text-base flex items-center gap-2.5">
                         <i class="ph-bold ph-heart text-lg"></i>
-                        <span data-i18n="cta_donate">Підтримати на Base by mono</span>
+                        <span data-i18n="cta_donate">Підтримати донатом</span>
                     </a>
 
                     <a href="https://t.me/G_O1_ft" target="_blank" rel="noopener noreferrer" class="retro-btn px-4 py-3.5 text-sm sm:text-base flex items-center gap-2">
                         <i class="ph-bold ph-telegram-logo text-lg"></i>
-                        <span>Telegram: @G_O1_ft</span>
+                        <span data-i18n="cta_contact">Зв’язатися з автором</span>
                     </a>
                 </div>
 
@@ -671,7 +708,7 @@
             </div>
         </section>
 
-        <!-- SUPPORT / DONATION SECTION (BASE BY MONO) -->
+        <!-- SUPPORT / DONATION SECTION (WAYFORPAY) -->
         <section id="support-section" class="pt-6 border-t-2 border-[var(--border-color)]">
             <div class="retro-card p-6 sm:p-8 lg:p-10 space-y-8">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -680,7 +717,7 @@
                     <div class="lg:col-span-7 space-y-4">
                         <div class="inline-flex items-center gap-2 px-2.5 py-1 bg-[var(--bg-panel)] text-[var(--text-inverted)] text-xs font-extrabold rounded uppercase">
                             <i class="ph-bold ph-lightning"></i>
-                            <span data-i18n="donate_badge">Незалежна розробка • Base by mono</span>
+                            <span data-i18n="donate_badge">Незалежна розробка • WayForPay</span>
                         </div>
                         <h2 class="text-2xl sm:text-3xl font-extrabold" data-i18n="donate_title">
                             Про гроші. Бо навіть бурштинова ностальгія не живиться від святого духу
@@ -689,18 +726,15 @@
                             Я створюю Amber Home у Кривому Розі самотужки, без інвесторів чи бюджету. Зараз живу на невелику пенсію по зору, тому кожна платна підписка на інструменти розробки — це відчутна стаття витрат.
                         </p>
                         <p class="text-sm sm:text-base leading-relaxed opacity-90" data-i18n="donate_p2">
-                            А ще дуже допомогла б проста зарядна станція, щоб відключення світла не перетворювали роботу над проєктом на квест «встигни зберегти все до темряви». Якщо тобі близька моя ідея — буду вдячний за будь-який донат або підписку на <strong>Base by mono</strong>.
+                            А ще дуже допомогла б проста зарядна станція, щоб відключення світла не перетворювали роботу над проєктом на квест «встигни зберегти все до темряви». Якщо тобі близька моя ідея — буду вдячний за будь-який донат через <strong>WayForPay</strong>.
                         </p>
 
                         <div class="pt-2 flex flex-wrap items-center gap-4">
-                            <a id="base-mono-link" href="https://base.monobank.ua/" target="_blank" rel="noopener noreferrer" class="retro-btn-primary px-6 py-4 text-base flex items-center gap-3">
+                            <a id="donation-link" data-donation-link href="https://secure.wayforpay.com/donate/amberhomeua" target="_blank" rel="noopener noreferrer" class="retro-btn-primary px-6 py-4 text-base flex items-center gap-3">
                                 <i class="ph-bold ph-coffee text-xl"></i>
-                                <span data-i18n="donate_btn_main">Підтримати на Base by mono</span>
+                                <span data-i18n="donate_btn_main">Підтримати донатом</span>
                                 <i class="ph-bold ph-arrow-up-right"></i>
                             </a>
-                            <button onclick="openConfigLinkModal()" class="text-xs font-bold underline opacity-75 hover:opacity-100" title="Налаштувати точне посилання після модерації">
-                                <i class="ph-bold ph-gear"></i> <span data-i18n="donate_set_url">Вказати свій URL Base</span>
-                            </button>
                         </div>
                     </div>
 
@@ -711,14 +745,12 @@
                             <span>[2026]</span>
                         </div>
 
+                        <p class="text-xs opacity-80" data-i18n="goals_note">Орієнтовні витрати, а не суми зібраних коштів.</p>
                         <!-- Goal 1 -->
                         <div class="space-y-1.5">
                             <div class="flex justify-between text-xs font-bold">
                                 <span data-i18n="goal1_name">1. Підписки на AI та інструменти (на місяць)</span>
-                                <span>$25 / міс</span>
-                            </div>
-                            <div class="w-full h-4 border-2 border-[var(--border-color)] rounded p-0.5 bg-[var(--bg-main)]">
-                                <div id="goal1-bar" class="h-full bg-[var(--bg-panel)]" style="width: 33%"></div>
+                                <span class="shrink-0 ml-3" data-i18n="goal1_amount">$100 / міс</span>
                             </div>
                             <p class="text-[11px] opacity-80" data-i18n="goal1_sub">Дозволяє швидко виправляти баги, писати код та готувати реліз у Google Play.</p>
                         </div>
@@ -727,10 +759,7 @@
                         <div class="space-y-1.5">
                             <div class="flex justify-between text-xs font-bold">
                                 <span data-i18n="goal2_name">2. Зарядна станція для роботи під час блекаутів</span>
-                                <span>~12 000 ₴</span>
-                            </div>
-                            <div class="w-full h-4 border-2 border-[var(--border-color)] rounded p-0.5 bg-[var(--bg-main)]">
-                                <div id="goal2-bar" class="h-full bg-[var(--bg-panel)]" style="width: 18%"></div>
+                                <span class="shrink-0 ml-3">~12 000 ₴</span>
                             </div>
                             <p class="text-[11px] opacity-80" data-i18n="goal2_sub">Щоб працювати над Amber Home незалежно від графіків відключень світла.</p>
                         </div>
@@ -756,8 +785,8 @@
                 <div class="retro-card p-5 flex flex-col justify-between space-y-4">
                     <div class="space-y-2">
                         <div class="flex items-center justify-between text-xs font-bold opacity-75">
-                            <span>ДРУКАРНЯ • СТАТТЯ</span>
-                            <span>ЖОВТЕНЬ 2026</span>
+                            <span data-i18n="art1_source">ДРУКАРНЯ • СТАТТЯ</span>
+                            <span data-i18n="art1_date">ЖОВТЕНЬ 2026</span>
                         </div>
                         <h3 class="text-base font-extrabold leading-snug" data-i18n="art1_title">
                             «Мене задовбали сучасні смартфони. Тому я зробив зі свого Android старий Siemens»
@@ -777,7 +806,7 @@
                     <div class="space-y-2">
                         <div class="flex items-center justify-between text-xs font-bold opacity-75">
                             <span>DEVLOG #05</span>
-                            <span>ОНОВЛЕННЯ</span>
+                            <span data-i18n="art2_label">ОНОВЛЕННЯ</span>
                         </div>
                         <h3 class="text-base font-extrabold leading-snug" data-i18n="art2_title">
                             Монохромні гліфи, Режим тиші та ретро-ігри в Game Center
@@ -795,7 +824,7 @@
                 <div class="retro-card p-5 flex flex-col justify-between space-y-4">
                     <div class="space-y-2">
                         <div class="flex items-center justify-between text-xs font-bold opacity-75">
-                            <span>ПРЯМИЙ КОНТАКТ</span>
+                            <span data-i18n="art3_label">ПРЯМИЙ КОНТАКТ</span>
                             <span>TELEGRAM / REDDIT</span>
                         </div>
                         <h3 class="text-base font-extrabold leading-snug" data-i18n="art3_title">
@@ -807,13 +836,13 @@
                     </div>
                     <a href="https://t.me/G_O1_ft" target="_blank" rel="noopener noreferrer" class="retro-btn w-full py-2.5 text-xs flex items-center justify-center gap-2">
                         <i class="ph-bold ph-telegram-logo"></i>
-                        <span>Написати в Telegram (@G_O1_ft)</span>
+                        <span data-i18n="contact_telegram">Написати в Telegram (@G_O1_ft)</span>
                     </a>
                 </div>
             </div>
         </section>
 
-        <!-- FEEDBACK FORM SECTION + DIRECT TELEGRAM BANNER -->
+        <!-- DIRECT TELEGRAM CONTACT -->
         <section id="feedback-section" class="space-y-8 pt-6 border-t-2 border-[var(--border-color)]">
             <div class="max-w-2xl mx-auto space-y-6">
                 <div class="text-center space-y-2">
@@ -834,7 +863,6 @@
                         <span>@G_O1_ft</span>
                     </a>
                 </div>
-
                 <form id="feedback-form" onsubmit="submitFeedback(event)" class="retro-card p-6 sm:p-8 space-y-4">
                     <h3 class="font-extrabold text-base uppercase border-b-2 border-[var(--border-color)] pb-2" data-i18n="form_heading">
                         Форма зворотного зв'язку (на пошту автору)
@@ -842,13 +870,13 @@
 
                     <div>
                         <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_name_label">Твій нікнейм або ім'я *</label>
-                        <input type="text" id="fb-author" required maxlength="40" placeholder="Напр., Олексій / u/retro_fan" class="retro-input w-full text-sm">
+                        <input type="text" id="fb-author" required maxlength="40" placeholder="Напр., Олексій / u/retro_fan" data-i18n-placeholder="form_name_placeholder" class="retro-input w-full text-sm">
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_device_label">Модель смартфона</label>
-                            <input type="text" id="fb-device" maxlength="40" placeholder="Redmi, Pixel, Samsung..." class="retro-input w-full text-sm">
+                        <input type="text" id="fb-device" maxlength="40" placeholder="Redmi, Pixel, Samsung..." data-i18n-placeholder="form_device_placeholder" class="retro-input w-full text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_type_label">Категорія</label>
@@ -863,7 +891,7 @@
 
                     <div>
                         <label class="block text-xs font-bold uppercase mb-1" data-i18n="form_msg_label">Повідомлення та твій контакт (Telegram / Email / Reddit) *</label>
-                        <textarea id="fb-message" required rows="4" maxlength="700" placeholder="Напиши, як тобі ідея, або залиш свій контакт (Telegram / Email / Reddit), щоб я надіслав тобі актуальний APK..." class="retro-input w-full text-sm"></textarea>
+                        <textarea id="fb-message" required rows="4" maxlength="700" placeholder="Напиши, як тобі ідея, або залиш свій контакт (Telegram / Email / Reddit), щоб я надіслав тобі актуальний APK..." data-i18n-placeholder="form_message_placeholder" class="retro-input w-full text-sm"></textarea>
                     </div>
 
                     <button type="submit" id="fb-submit-btn" class="retro-btn-primary w-full py-3.5 text-sm flex items-center justify-center gap-2">
@@ -883,7 +911,7 @@
         <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold">
             <div class="flex items-center gap-2">
                 <span class="px-2 py-0.5 bg-[var(--bg-panel)] text-[var(--text-inverted)] rounded">AMBER HOME</span>
-                <span>by G.Renard (Amber Renard) • Кривий Ріг, Україна 🇺🇦</span>
+                <span data-i18n="footer_location">by G.Renard (Amber Renard) • Кривий Ріг, Україна 🇺🇦</span>
             </div>
             <div class="flex flex-wrap items-center gap-4 opacity-90">
                 <a href="https://t.me/G_O1_ft" target="_blank" rel="noopener noreferrer" class="underline flex items-center gap-1">
@@ -891,7 +919,6 @@
                 </a>
                 <button onclick="setTheme('amber')" class="underline">Amber</button>
                 <button onclick="setTheme('gameboy')" class="underline">Game Boy</button>
-                <a href="#support-section" class="underline" data-i18n="footer_support">Base by mono</a>
             </div>
         </div>
     </footer>
@@ -908,8 +935,7 @@
             </p>
             <div class="retro-card-flat p-3.5 text-xs space-y-1.5">
                 <div class="font-extrabold uppercase" data-i18n="apk_reqs_title">Системні вимоги:</div>
-                <div>• Android 8.0+ (працює легко навіть на старих Redmi / Samsung)</div>
-                <div>• Нуль реклами, трекерів чи прихованих підписок</div>
+                <div data-i18n="apk_system">• Android 8.0+ (працює легко навіть на старих Redmi / Samsung)</div>
             </div>
             <div class="space-y-2.5 pt-2">
                 <a href="https://t.me/G_O1_ft" target="_blank" rel="noopener noreferrer" class="retro-btn-primary w-full py-3 text-sm flex items-center justify-center gap-2">
@@ -920,9 +946,9 @@
                     <i class="ph-bold ph-envelope-simple"></i>
                     <span data-i18n="apk_modal_btn_join">Або залишити заявку через форму на сайті</span>
                 </a>
-                <a href="#support-section" onclick="closeApkModal()" class="retro-btn w-full py-2.5 text-xs flex items-center justify-center gap-2">
+                <a data-donation-link href="https://secure.wayforpay.com/donate/amberhomeua" target="_blank" rel="noopener noreferrer" onclick="closeApkModal()" class="retro-btn w-full py-2.5 text-xs flex items-center justify-center gap-2">
                     <i class="ph-bold ph-heart"></i>
-                    <span data-i18n="apk_modal_btn_donate">Підтримати розробку на Base by mono</span>
+                    <span data-i18n="apk_modal_btn_donate">Підтримати розробку на WayForPay</span>
                 </a>
             </div>
         </div>
@@ -932,35 +958,17 @@
     <div id="article-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
         <div class="retro-card max-w-2xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
             <div class="flex items-center justify-between border-b-2 border-[var(--border-color)] pb-2">
-                <h3 class="font-extrabold text-base sm:text-lg uppercase">Мене задовбали сучасні смартфони (Уривок)</h3>
+                <h3 class="font-extrabold text-base sm:text-lg uppercase" data-i18n="article_modal_title">Мене задовбали сучасні смартфони (Уривок)</h3>
                 <button onclick="closeArticlePreviewModal()" class="retro-btn px-2.5 py-1 text-xs">✕</button>
             </div>
             <div class="overflow-y-auto space-y-3 text-sm leading-relaxed pr-2">
-                <p><strong>Зізнавайся. Було таке?</strong> Береш телефон, щоб подивитися, котра година. Дрібниця, секунд на десять. А потім — хоп! — ти вже знаєш, як якийсь мужик викопав басейн посеред джунглів, чому черговий депутат знову щось утнув... А котра година — так і не подивився.</p>
-                <p>І ось я дивлюся на свій старенький Redmi K40 Gaming. Працює? Працює. Навіщо мені новий смартфон за ціною літака або dumbphone за ціною iPhone? Може, спробувати повернути відчуття старого Siemens ME45: зрозуміле меню, кнопкова навігація, приємна стримана палітра, жодного цирку з іконками?</p>
-                <p><strong>Hardmode: зумери, приготуйтеся, зараз буде боляче.</strong> Я зробив навігацію D-pad: вгору, вниз, підтвердити. Поки ти доходиш до потрібного застосунку крок за кроком, іноді встигаєш спитати себе: «А воно мені зараз взагалі треба?» Іноді відповідь — ні. І тоді рука спокійно кладе телефон назад.</p>
-                <p class="italic font-bold">«Хороший телефон — не той, що постійно привертає твою увагу. А той, що мовчки допомагає, коли він тобі потрібен».</p>
+                <p data-i18n="article_modal_p1"><strong>Зізнавайся. Було таке?</strong> Береш телефон, щоб подивитися, котра година. Дрібниця, секунд на десять. А потім — хоп! — ти вже знаєш, як якийсь мужик викопав басейн посеред джунглів, чому черговий депутат знову щось утнув... А котра година — так і не подивився.</p>
+                <p data-i18n="article_modal_p2">І ось я дивлюся на свій старенький Redmi K40 Gaming. Працює? Працює. Навіщо мені новий смартфон за ціною літака або dumbphone за ціною iPhone? Може, спробувати повернути відчуття старого Siemens ME45: зрозуміле меню, кнопкова навігація, приємна стримана палітра, жодного цирку з іконками?</p>
+                <p data-i18n="article_modal_p3"><strong>Hardmode: зумери, приготуйтеся, зараз буде боляче.</strong> Я зробив навігацію D-pad: вгору, вниз, підтвердити. Поки ти доходиш до потрібного застосунку крок за кроком, іноді встигаєш спитати себе: «А воно мені зараз взагалі треба?» Іноді відповідь — ні. І тоді рука спокійно кладе телефон назад.</p>
+                <p class="italic font-bold" data-i18n="article_modal_quote">«Хороший телефон — не той, що постійно привертає твою увагу. А той, що мовчки допомагає, коли він тобі потрібен».</p>
             </div>
             <div class="pt-2 border-t-2 border-[var(--border-color)] flex justify-end">
-                <button onclick="closeArticlePreviewModal()" class="retro-btn px-4 py-2 text-xs">Закрити</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 3: OWNER LINK CONFIGURATOR -->
-    <div id="config-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
-        <div class="retro-card max-w-md w-full p-6 space-y-4">
-            <div class="flex items-center justify-between border-b-2 border-[var(--border-color)] pb-2">
-                <h3 class="font-extrabold text-base uppercase">Налаштування посилання Base by mono</h3>
-                <button onclick="closeConfigLinkModal()" class="retro-btn px-2.5 py-1 text-xs">✕</button>
-            </div>
-            <p class="text-xs leading-relaxed opacity-90">
-                Коли модерація Base by mono прийде в пуші monobank, встав сюди своє персональне посилання (наприклад, <code>https://base.monobank.ua/amber_renard</code>), щоб усі кнопки на сайті вели прямо туди:
-            </p>
-            <input type="url" id="custom-base-url-input" placeholder="https://base.monobank.ua/..." class="retro-input w-full text-sm">
-            <div class="flex justify-end gap-2">
-                <button onclick="closeConfigLinkModal()" class="retro-btn px-4 py-2 text-xs">Скасувати</button>
-                <button onclick="saveCustomBaseUrl()" class="retro-btn-primary px-4 py-2 text-xs">Зберегти посилання</button>
+                <button onclick="closeArticlePreviewModal()" class="retro-btn px-4 py-2 text-xs" data-i18n="article_modal_close">Закрити</button>
             </div>
         </div>
     </div>
@@ -1006,14 +1014,43 @@
 
         const i18n = {
             uk: {
+                form_heading: "Форма зворотного зв'язку (на пошту автору)",
+                form_name_label: "Твій нікнейм або ім'я *",
+                form_name_placeholder: "Напр., Олексій / u/retro_fan",
+                form_device_label: "Модель смартфона",
+                form_device_placeholder: "Redmi, Pixel, Samsung...",
+                form_type_label: "Категорія",
+                cat_review: "🔥 Враження",
+                cat_idea: "💡 Ідея / Фіча",
+                cat_bug: "🐛 Баг / Помилка",
+                cat_beta: "📱 Хочу в бета-тест (Отримати APK)",
+                form_msg_label: "Повідомлення та твій контакт (Telegram / Email / Reddit) *",
+                form_message_placeholder: "Напиши, як тобі ідея, або залиш свій контакт (Telegram / Email / Reddit), щоб я надіслав тобі актуальний APK...",
+                form_submit_btn: "Надіслати повідомлення автору",
+                apk_modal_btn_join: "Або залишити заявку через форму на сайті",
+                art1_source: "ДРУКАРНЯ • СТАТТЯ",
+                art1_date: "ЖОВТЕНЬ 2026",
+                art2_label: "ОНОВЛЕННЯ",
+                art3_label: "ПРЯМИЙ КОНТАКТ",
+                footer_location: "by G.Renard (Amber Renard) • Кривий Ріг, Україна 🇺🇦",
+                article_modal_title: "Мене задовбали сучасні смартфони (Уривок)",
+                article_modal_p1: "<strong>Зізнавайся. Було таке?</strong> Береш телефон, щоб подивитися, котра година. Дрібниця, секунд на десять. А потім — хоп! — ти вже знаєш, як якийсь мужик викопав басейн посеред джунглів, чому черговий депутат знову щось утнув... А котра година — так і не подивився.",
+                article_modal_p2: "І ось я дивлюся на свій старенький Redmi K40 Gaming. Працює? Працює. Навіщо мені новий смартфон за ціною літака або dumbphone за ціною iPhone? Може, спробувати повернути відчуття старого Siemens ME45: зрозуміле меню, кнопкова навігація, приємна стримана палітра, жодного цирку з іконками?",
+                article_modal_p3: "<strong>Hardmode: зумери, приготуйтеся, зараз буде боляче.</strong> Я зробив навігацію D-pad: вгору, вниз, підтвердити. Поки ти доходиш до потрібного застосунку крок за кроком, іноді встигаєш спитати себе: «А воно мені зараз взагалі треба?» Іноді відповідь — ні. І тоді рука спокійно кладе телефон назад.",
+                article_modal_quote: "«Хороший телефон — не той, що постійно привертає твою увагу. А той, що мовчки допомагає, коли він тобі потрібен».",
+                article_modal_close: "Закрити",
+                cta_contact: "Зв’язатися з автором",
+                contact_telegram: "Написати в Telegram (@G_O1_ft)",
+                goals_note: "Орієнтовні витрати, а не суми зібраних коштів.",
+                goal1_amount: "$100 / міс",
+                apk_system: "• Android 8.0+ (працює легко навіть на старих Redmi / Samsung)",
                 hero_badge: "Натхненний Siemens ME45 • Створений в Україні",
                 hero_title: "Я не хочу тупий телефон. Я хочу, щоб розумний телефон перестав робити дурня з мене.",
                 hero_subtitle: "Мене дістало, що гаджети керують нашою увагою, втомлюють зір кислотними іконками й змушують купувати нове залізо щороку. <strong>Amber Home</strong> — це незалежний ретро-лаунчер для Android із теплим бурштиновим світлом, монохромними гліфами, фізичною логікою кнопок D-pad, чесним <strong>Режимом тиші</strong> та повагою до твого часу й очей.",
                 pill_eyes: "► Комфорт для зору (115%+)",
-                pill_noads: "► Нуль реклами та сміття",
                 pill_games: "► Ретро Game Center (Тетріс і Танки)",
-                cta_apk: "Завантажити Beta APK",
-                cta_donate: "Підтримати на Base by mono",
+                cta_apk: "Отримати APK",
+                cta_donate: "Підтримати донатом",
                 hero_try_hint: "💡 Порада: спробуй поклацати кнопки <strong>▲ ▼ OK НАЗАД</strong> на екрані смартфона праворуч (або стрілками на клавіатурі)! Перевір <strong>УСІ ДОДАТКИ</strong>, <strong>НАЛАШТУВАННЯ</strong> та <strong>GAME CENTER</strong>.",
                 phone_date: "СБ, 24 ЖОВТ",
                 quick_title: "ШВИДКИЙ ДОСТУП",
@@ -1058,12 +1095,11 @@
                 tr4_e: "Налаштування теплоти кольору (0–100%) та стилів виділення (Комфорт, Стандарт, Інверсія) вже в збірці.",
                 tr5_f: "Вбудований GAME CENTER (Amber Blocks & Amber Tanks)",
                 tr5_e: "Класичний тетріс та тактичні танки з окопами, димом, радаром і ремонтом прямо всередині лаунчера.",
-                donate_badge: "Незалежна розробка • Base by mono",
+                donate_badge: "Незалежна розробка • WayForPay",
                 donate_title: "Про гроші. Бо навіть бурштинова ностальгія не живиться від святого духу",
                 donate_p1: "Я створюю Amber Home у Кривому Розі самотужки, без інвесторів чи бюджету. Зараз живу на невелику пенсію по зору, тому кожна платна підписка на інструменти розробки — це відчутна стаття витрат.",
-                donate_p2: "А ще дуже допомогла б проста зарядна станція, щоб відключення світла не перетворювали роботу над проєктом на квест «встигни зберегти все до темряви». Якщо тобі близька моя ідея — буду вдячний за будь-який донат або підписку на <strong>Base by mono</strong>.",
-                donate_btn_main: "Підтримати на Base by mono",
-                donate_set_url: "Вказати свій URL Base",
+                donate_p2: "А ще дуже допомогла б проста зарядна станція, щоб відключення світла не перетворювали роботу над проєктом на квест «встигни зберегти все до темряви». Якщо тобі близька моя ідея — буду вдячний за будь-який донат через <strong>WayForPay</strong>.",
+                donate_btn_main: "Підтримати донатом",
                 goals_title: "АКТУАЛЬНІ ЦІЛІ ПРОЄКТУ",
                 goal1_name: "1. Підписки на AI та інструменти (на місяць)",
                 goal1_sub: "Дозволяє швидко виправляти баги, писати код та готувати реліз у Google Play.",
@@ -1079,38 +1115,55 @@
                 art2_desc: "Додано власний пак монохромних іконок, налаштування теплоти бурштинового кольору (65%), розклад паузи для соцмереж та тактичні Amber Tanks.",
                 art2_tag: "🔧 Вже у свіжій Beta-збірці APK",
                 art3_title: "Зв'язок з автором проєкту та обговорення бета-тесту",
-                art3_desc: "Збираємо відгуки від бета-тестерів з України та всього світу. Маєш ідею чи знайшов кривий болт в інтерфейсі — пиши прямо мені в Telegram або у форму нижче!",
+                art3_desc: "Збираємо відгуки від бета-тестерів з України та всього світу. Маєш ідею чи знайшов кривий болт в інтерфейсі — пиши прямо мені в Telegram!",
                 fb_kicker: "БЕТА-ТЕСТУВАННЯ ТА ЗВОРОТНИЙ ЗВ'ЯЗОК",
                 fb_title: "Написати автору: фідбек, баги або запит на APK",
                 fb_subtitle: "Мені цікаво не лише «вау, красиво», а конкретно: що незручно, де крива рамка або чого не вистачає, щоб залишити лаунчер на тиждень.",
                 tg_banner_text: "Хочеш написати напряму або швидко отримати APK у Telegram?",
-                form_heading: "Форма зворотного зв'язку (на пошту автору)",
-                form_name_label: "Твій нікнейм або ім'я *",
-                form_device_label: "Модель смартфона",
-                form_type_label: "Категорія",
-                cat_review: "🔥 Враження",
-                cat_idea: "💡 Ідея / Фіча",
-                cat_bug: "🐛 Баг / Помилка",
-                cat_beta: "📱 Хочу в бета-тест (Отримати APK)",
-                form_msg_label: "Повідомлення та твій контакт (Telegram / Email / Reddit) *",
-                form_submit_btn: "Надіслати повідомлення автору",
-                footer_support: "Підтримати на Base",
                 apk_modal_title: "Бета-тест Amber Home APK",
                 apk_modal_desc: "Зараз ми тестуємо свіжу бета-збірку на різних Android-пристроях (перевіряємо роботу D-pad, Режим тиші, безпечний вихід із Hardmode та монохромні гліфи).",
                 apk_reqs_title: "Системні вимоги:",
                 apk_modal_btn_tg: "Написати в Telegram (@G_O1_ft) за APK",
-                apk_modal_btn_join: "Або залишити заявку через форму на сайті",
-                apk_modal_btn_donate: "Підтримати розробку на Base by mono"
+                apk_modal_btn_donate: "Підтримати розробку на WayForPay"
             },
             en: {
+                form_heading: "Feedback Form (Direct to Creator's Email)",
+                form_name_label: "Your Name or Handle *",
+                form_name_placeholder: "For example, Alex / u/retro_fan",
+                form_device_label: "Phone Model",
+                form_device_placeholder: "Redmi, Pixel, Samsung...",
+                form_type_label: "Category",
+                cat_review: "🔥 Impressions",
+                cat_idea: "💡 Feature Idea",
+                cat_bug: "🐛 Bug Report",
+                cat_beta: "📱 Join Beta Test (Get APK)",
+                form_msg_label: "Message & Your Contact (Reddit / Telegram / Email) *",
+                form_message_placeholder: "Tell me what you think, or leave your contact (Telegram / Email / Reddit) so I can send you the latest APK...",
+                form_submit_btn: "Send Message to Creator",
+                apk_modal_btn_join: "Or request via the website form below",
+                art1_source: "DRUKARNYA • ARTICLE",
+                art1_date: "OCTOBER 2026",
+                art2_label: "UPDATE",
+                art3_label: "DIRECT CONTACT",
+                footer_location: "by G.Renard (Amber Renard) • Kryvyi Rih, Ukraine 🇺🇦",
+                article_modal_title: "I Got Sick of Modern Smartphones (Excerpt)",
+                article_modal_p1: "<strong>Sound familiar?</strong> You pick up your phone to check the time. It should take ten seconds. Then suddenly you know how some guy dug a swimming pool in the jungle and what a politician did today... but you still haven't checked the time.",
+                article_modal_p2: "I look at my old Redmi K40 Gaming. It still works. Why buy a new smartphone for a fortune, or a dumbphone for the price of an iPhone? Maybe I can bring back the feel of the old Siemens ME45: a clear menu, button navigation, a calm palette, and none of the icon circus.",
+                article_modal_p3: "<strong>Hardmode: get ready.</strong> I built D-pad navigation: up, down, confirm. By the time you reach a social app one step at a time, you may ask yourself: ‘Do I really need to open this right now?’ Sometimes the answer is no, and you put the phone down.",
+                article_modal_quote: "‘A good phone doesn't constantly demand your attention. It quietly helps when you need it.’",
+                article_modal_close: "Close",
+                cta_contact: "Contact the developer",
+                contact_telegram: "Message on Telegram (@G_O1_ft)",
+                goals_note: "Estimated costs, not amounts raised.",
+                goal1_amount: "$100 / month",
+                apk_system: "• Android 8.0+ (runs on older Redmi / Samsung phones)",
                 hero_badge: "Siemens ME45 Inspired • Built in Ukraine",
                 hero_title: "I don't want a dumbphone. I want my smartphone to stop making a fool out of me.",
                 hero_subtitle: "I got tired of gadgets hijacking our attention, straining our eyes with flashy icons, and pushing overpriced hardware upgrades every year. <strong>Amber Home</strong> is an indie Old-School Android launcher with a calm amber glow, monochrome glyphs, tactile D-pad navigation, an honest <strong>Quiet Mode</strong>, and respect for your time and eyesight.",
                 pill_eyes: "► High-Contrast Eye Comfort (115%+)",
-                pill_noads: "► Zero Ads, Zero Bloat",
                 pill_games: "► Retro Game Center (Blocks & Tanks)",
-                cta_apk: "Download Beta APK",
-                cta_donate: "Support on Base by mono",
+                cta_apk: "Get APK",
+                cta_donate: "Support with a donation",
                 hero_try_hint: "💡 Tip: Click the <strong>▲ ▼ OK BACK</strong> buttons on the phone screen to the right (or use your keyboard arrow keys)! Test <strong>ALL APPS</strong>, <strong>SETTINGS</strong> & <strong>GAME CENTER</strong>.",
                 phone_date: "SAT, OCT 24",
                 quick_title: "QUICK ACCESS",
@@ -1155,12 +1208,11 @@
                 tr4_e: "Amber warmth slider (0–100%) and 3 selection border styles (Comfort, Standard, Inversion) included.",
                 tr5_f: "Built-in GAME CENTER (Amber Blocks & Amber Tanks)",
                 tr5_e: "Classic falling blocks & tactical 2D tanks with trenches, smoke screens, radar, and field repair.",
-                donate_badge: "100% Indie Project • Base by mono",
+                donate_badge: "100% Indie Project • WayForPay",
                 donate_title: "About Money. Because Even Amber Nostalgia Doesn't Run on Thin Air",
                 donate_p1: "I'm building Amber Home independently in Kryvyi Rih, Ukraine, with zero budget. I live on a modest disability pension (vision impairment), so every paid subscription for development tools is a real expense.",
-                donate_p2: "I'm also saving up for a basic portable power station so power blackouts don't turn development into a 'save before darkness hits' quest. If this idea resonates with you, any support on <strong>Base by mono</strong> means a lot.",
-                donate_btn_main: "Support on Base by mono",
-                donate_set_url: "Set custom Base URL",
+                donate_p2: "I'm also saving up for a basic portable power station so power blackouts don't turn development into a 'save before darkness hits' quest. If this idea resonates with you, any support on <strong>WayForPay</strong> means a lot.",
+                donate_btn_main: "Support with a donation",
                 goals_title: "CURRENT PROJECT GOALS",
                 goal1_name: "1. Dev Tools & AI Subscriptions (Monthly)",
                 goal1_sub: "Helps me squash bugs faster, refine code, and prepare a Google Play release.",
@@ -1181,23 +1233,11 @@
                 fb_title: "Contact Creator: Feedback, Bugs, or Beta APK Request",
                 fb_subtitle: "I'm not looking for 'wow, cool screenshots'—tell me what feels clunky, which border looks off, or what you need to daily-drive this for a week.",
                 tg_banner_text: "Want to message me directly or get the APK fast on Telegram?",
-                form_heading: "Feedback Form (Direct to Creator's Email)",
-                form_name_label: "Your Name or Handle *",
-                form_device_label: "Phone Model",
-                form_type_label: "Category",
-                cat_review: "🔥 Impressions",
-                cat_idea: "💡 Feature Idea",
-                cat_bug: "🐛 Bug Report",
-                cat_beta: "📱 Join Beta Test (Get APK)",
-                form_msg_label: "Message & Your Contact (Reddit / Telegram / Email) *",
-                form_submit_btn: "Send Message to Creator",
-                footer_support: "Support on Base",
                 apk_modal_title: "Amber Home Beta APK",
                 apk_modal_desc: "We're currently testing the beta build across various Android phones (verifying D-pad navigation, Quiet Mode, safe Hardmode toggle, and monochrome glyphs).",
                 apk_reqs_title: "System Requirements:",
                 apk_modal_btn_tg: "Message on Telegram (@G_O1_ft) for APK",
-                apk_modal_btn_join: "Or request via the website form below",
-                apk_modal_btn_donate: "Support Project on Base by mono"
+                apk_modal_btn_donate: "Support Project on WayForPay"
             }
         };
 
@@ -1686,7 +1726,7 @@
         // Keyboard Arrow Support
         window.addEventListener('keydown', (e) => {
             const tag = document.activeElement ? document.activeElement.tagName : '';
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+            if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(tag)) return;
 
             if (e.key === 'ArrowUp') { e.preventDefault(); phoneKey('UP'); }
             else if (e.key === 'ArrowDown') { e.preventDefault(); phoneKey('DOWN'); }
@@ -1716,6 +1756,36 @@
             });
 
             renderPhoneScreen();
+        }
+
+        let languageManuallySelected = false;
+        // Country endpoint: https://www.geojs.io/docs/v1/endpoints/country/
+        // No GPS permission, credentials, or API key. Only a country code is read.
+        async function initializeLanguage() {
+            let saved;
+            try { saved = localStorage.getItem('amber-home-language'); } catch (_) {}
+            if (saved === 'uk' || saved === 'en') {
+                setLanguage(saved, true);
+                return;
+            }
+            const fallback = /^uk(?:-|$)/i.test(navigator.language || '') ? 'uk' : 'en';
+            setLanguage(fallback, false);
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 2500);
+            try {
+                const response = await fetch('https://get.geojs.io/v1/ip/country', {
+                    signal: controller.signal, credentials: 'omit', referrerPolicy: 'no-referrer'
+                });
+                if (!response.ok) return;
+                const country = (await response.text()).trim().toUpperCase();
+                if (/^[A-Z]{2}$/.test(country) && country !== 'XX' && !languageManuallySelected) {
+                    setLanguage(country === 'UA' ? 'uk' : 'en', false);
+                }
+            } catch (_) {
+                // Offline, timeout, or blocked lookup: keep the usable browser-language fallback.
+            } finally {
+                clearTimeout(timeout);
+            }
         }
 
         let currentVideoLang = 'uk';
@@ -1760,7 +1830,15 @@
             }
         }
 
-        function setLanguage(lang) {
+        function setLanguage(lang, manual = true) {
+            if (lang !== 'uk' && lang !== 'en') return;
+            if (manual) {
+                languageManuallySelected = true;
+                try { localStorage.setItem('amber-home-language', lang); } catch (_) {}
+            }
+            document.querySelectorAll('[data-donation-link]').forEach(link => {
+                link.href = SITE_CONFIG.donationUrls[lang];
+            });
             currentLang = lang;
             document.documentElement.lang = lang;
 
@@ -1769,6 +1847,13 @@
                 const key = el.getAttribute('data-i18n');
                 if (dict && dict[key]) {
                     el.innerHTML = dict[key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (dict && dict[key]) {
+                    el.placeholder = dict[key];
                 }
             });
 
@@ -1787,7 +1872,7 @@
         }
 
         // ==========================================
-        // 4. DIRECT EMAIL DELIVERY VIA WEB3FORMS
+        // 5. MODALS & CLOCK INITIALIZATION
         // ==========================================
         async function submitFeedback(e) {
             e.preventDefault();
@@ -1820,7 +1905,8 @@
                     })
                 });
 
-                if (res.ok) {
+                const result = await res.json();
+                if (res.ok && result.success === true) {
                     document.getElementById('fb-message').value = '';
                     statusMsg.textContent = currentLang === 'uk' 
                         ? "✓ Повідомлення успішно надіслано автору на пошту! Дякую." 
@@ -1833,8 +1919,8 @@
             } catch (err) {
                 console.warn("Web3Forms error:", err);
                 statusMsg.textContent = currentLang === 'uk'
-                    ? "✓ Запит оброблено!"
-                    : "✓ Request processed!";
+                    ? "⚠ Не вдалося надіслати. Напиши мені в Telegram: @G_O1_ft"
+                    : "⚠ Failed to send. Message me on Telegram: @G_O1_ft";
             }
 
             submitBtn.disabled = false;
@@ -1842,9 +1928,6 @@
             setTimeout(() => statusMsg.classList.add('hidden'), 5000);
         }
 
-        // ==========================================
-        // 5. MODALS & CLOCK INITIALIZATION
-        // ==========================================
         function openApkModal() { document.getElementById('apk-modal').classList.remove('hidden'); }
         function closeApkModal() { document.getElementById('apk-modal').classList.add('hidden'); }
         function prefillBetaRequest() {
@@ -1860,20 +1943,6 @@
         function openArticlePreviewModal() { document.getElementById('article-modal').classList.remove('hidden'); }
         function closeArticlePreviewModal() { document.getElementById('article-modal').classList.add('hidden'); }
 
-        function openConfigLinkModal() {
-            const currentHref = document.getElementById('base-mono-link').getAttribute('href');
-            document.getElementById('custom-base-url-input').value = currentHref;
-            document.getElementById('config-modal').classList.remove('hidden');
-        }
-        function closeConfigLinkModal() { document.getElementById('config-modal').classList.add('hidden'); }
-        function saveCustomBaseUrl() {
-            const val = document.getElementById('custom-base-url-input').value.trim();
-            if (val && val.startsWith('http')) {
-                document.getElementById('base-mono-link').setAttribute('href', val);
-                closeConfigLinkModal();
-            }
-        }
-
         function updateLiveClock() {
             const now = new Date();
             const hh = String(now.getHours()).padStart(2, '0');
@@ -1886,11 +1955,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            if (SITE_CONFIG.baseMonoUrl) {
-                document.getElementById('base-mono-link').setAttribute('href', SITE_CONFIG.baseMonoUrl);
-            }
-            document.getElementById('goal1-bar').style.width = (SITE_CONFIG.goal1Percent || 33) + '%';
-            document.getElementById('goal2-bar').style.width = (SITE_CONFIG.goal2Percent || 18) + '%';
+            initializeLanguage();
 
             updateLiveClock();
             setInterval(updateLiveClock, 15000);
